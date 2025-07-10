@@ -30,6 +30,7 @@ GlobalConfiguration.Configuration
 RecurringJob.AddOrUpdate<IStudentExamService>(
     service => service.CheckAndSendExamResultsAsync(),
     Cron.Hourly(),
+
     TimeZoneInfo.Local
 );
 RecurringJob.AddOrUpdate<IClassroomService>(
