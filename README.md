@@ -1,1 +1,1 @@
-![Açıklama](./Screens/admin panel.png)
+![Açıklama](./Screens/eng.PNG)
