@@ -1,0 +1,56 @@
+﻿@model BAExamApp.MVC.Areas.Admin.Models.EmailTemplateVMs.AdminEmailTemplateDetailsVM
+
+@{
+    ViewData["Title"] = @ViewLocalizer["Details"];
+}
+<link rel="stylesheet" href="~/css/index-emailtemplate.css" />
+<link rel="stylesheet" href="~/css/add-emailtemplate.css" />
+<div class="card mb-5 mb-xl-10" style="display:flex">
+    <div class="card-header cursor-pointer align-items-center">
+        <h3 class="fw-bolder m-0">Details</h3>
+        <div class="gap-5 m-0">
+            <a class="btn btn-primary align-self-center" data-bs-toggle="modal" data-bs-target="#updateEmailTemplate" data-template-id="@Model.Id"
+               data-template-subject="@Model.Subject"
+               data-template-template="@Model.Template"
+               data-template-modelname="@Model.ModelName">@ViewLocalizer["Update_New"]</a>
+            <a class="btn btn-secondary align-self-center" asp-action="Index">@ViewLocalizer["Return_List"]</a>
+            <a class="btn btn-danger align-self-center" asp-action="Delete" asp-route-id="@Model.Id">@ViewLocalizer["Delete"]</a>
+        </div>
+    </div>
+    <div class="card-body p-9">
+        <dl class="row">
+            <dt class="col-sm-2">
+                @ViewLocalizer["Template_Name"]
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.ModelName)
+            </dd>
+            <dt class="col-sm-2">
+                @ViewLocalizer["Template_Subject"]
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Subject)
+            </dd>
+            <dt class="col-sm-2">
+                @ViewLocalizer["Template"]
+            </dt>
+            <dd class="col-sm-10">
+                <div class="editor-container">
+                    <div class="form-group">
+                        <div class="editor-wrapper">
+                            <textarea asp-for="Template" id="template-input-details" name="Template" style="user-select: none"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </dd>
+        </dl>
+    </div>
+</div>
+<partial name="~/Areas/Admin/Views/EmailTemplate/UpdatePartialView.cshtml" model="new AdminEmailTemplateUpdateVM()" />
+@section Sect {
+
+    <script src="~/newLayouts/dist/assets/plugins/custom/tinymce/tinymce.bundle.js"></script>
+    <script src="~/js/index-emailtemplate.js"></script>
+    <script src="~/js/details-emailtemplate.js"></script>
+   
+}

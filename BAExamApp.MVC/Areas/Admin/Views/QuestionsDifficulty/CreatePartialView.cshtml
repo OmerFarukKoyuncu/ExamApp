@@ -1,0 +1,167 @@
+﻿@model AdminQuestionDifficultyCreateVM
+
+@{
+    ViewData["Title"] = ViewLocalizer["Create_New"];
+
+}
+<head>
+    <link href="~/lib/trainer/css/addexamforstudent.css" rel="stylesheet" />
+</head>
+
+
+<div class="modal fade" id="createQuestionDifficultyModal" tabindex="-1" aria-labelledby="QuestionDifficultyAdd" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title text-center fw-bold">@ViewLocalizer["Create_New"]</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="form needs-validation" id="kt_modal_add_question_difficulty_form" method="post" asp-action="Create" novalidate>
+                    <div class="d-flex flex-column scroll-y me-n7 pe-7"
+                         id="kt_modal_create_scroll"
+                         data-kt-scroll="true"
+                         data-kt-scroll-activate="{default: false, lg: true}"
+                         data-kt-scroll-max-height="auto"
+                         data-kt-scroll-offset="300px">
+
+                        <div class="row">
+
+                            <!-- Name Field -->
+                            <div class="fv-row form-floating mb-7">
+                                <input asp-for="Name" class="form-control form-control-solid mb-3 mb-lg-0" placeholder="@SharedLocalizer["Name"]" required />
+                                <label asp-for="Name" class="required fw-bold fs-6 mb-2"></label>
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+
+                            <!-- Time Given Field -->
+                            <div class="fv-row form-floating mb-7">
+                                <input type="time" asp-for="TimeGiven" class="form-control form-control-solid mb-3 mb-lg-0" step="1" placeholder="@SharedLocalizer["TimeGiven"]" required />
+                                <label asp-for="TimeGiven" class="required fw-bold fs-6 mb-2"></label>
+                                <span asp-validation-for="TimeGiven" class="text-danger"></span>
+                            </div>
+
+                            <!-- Score Coefficient Field -->
+                            <div class="fv-row form-floating mb-7">
+                                <input type="text"
+                                       inputmode="decimal"
+                                       pattern="^[0-9]+([,][0-9]+)?$"
+                                       asp-for="ScoreCoefficient"
+                                       class="form-control form-control-solid mb-3 mb-lg-0"
+                                       id="ScoreCoefficient"
+                                       placeholder="@SharedLocalizer["ScoreCoefficient"]"
+                                       required />
+                                <label asp-for="ScoreCoefficient" class="required fw-bold fs-6 mb-2"></label>
+                                <span asp-validation-for="ScoreCoefficient" class="text-danger"></span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="text-center pt-15">
+                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">@SharedLocalizer["Back_List"]</button>
+                        <button type="submit" class="btn btn-success">
+                            <span class="indicator-label">@SharedLocalizer["Save"]</span>
+                        </button>
+                        <span class="indicator-progress d-none">
+                            @SharedLocalizer["Please_Wait"]
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/select2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/localization/messages_tr.min.js"></script>
+
+
+<script>
+    $('#mySelectSubjects').select2({
+        dropdownParent: $('#createQuestionDifficultyModal')
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        let input = document.getElementById("ScoreCoefficient");
+
+        input.addEventListener("input", function () {
+            this.value = this.value.replace(/[^0-9,]/g, ''); // Sadece rakam ve ondalık işaretleri izin ver
+            if (this.value.startsWith("-")) {
+                this.value = this.value.replace("-", ""); // Negatif işareti kaldır
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formElements = document.querySelectorAll(
+            '#kt_modal_add_question_difficulty_form input'
+        );
+
+        function checkAndToggleStar(element) {
+            const parentDiv = element.closest('.fv-row');
+            // console.log(parentDiv);
+            if (!parentDiv) return;
+
+            const label = parentDiv.querySelector('label');
+            if (!label) return;
+            // console.log("Label önce:", label);
+            if (element.value.trim() === "") {
+                label.classList.add("required");
+                // console.log("Label sonra:", label);
+            } else {
+                label.classList.remove("required");
+                // console.log("Label sonra:", label);
+            }
+        }
+
+        formElements.forEach(element => {
+
+            if (element.tagName.toLowerCase() === 'select') {
+                $(element).on('change', function () {
+                    checkAndToggleStar(this);
+                });
+            }
+            else {
+                element.addEventListener('input', function () {
+                    // console.log("Element" , element);
+                    checkAndToggleStar(element);
+                });
+
+                element.addEventListener('change', function () {
+                    // console.log("Değişti");
+                    checkAndToggleStar(element);
+                });
+            }
+
+        });
+
+    });
+ 
+</script>
+
+<script>
+    //Form kapandıktan sonra gerekli yerleri sıfırlama
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById('kt_modal_add_question_difficulty_form');
+
+
+        $('#createQuestionDifficultyModal').on('hidden.bs.modal', function () {
+
+            form.reset();
+
+            form.querySelectorAll('label').forEach(label => {
+                label.classList.add('required');
+            });
+            
+        });
+    });
+</script>

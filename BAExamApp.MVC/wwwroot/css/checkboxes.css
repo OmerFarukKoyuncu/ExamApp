@@ -1,0 +1,145 @@
+﻿.product-card {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+    .product-card .checkbox-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+    }
+
+        .product-card .checkbox-row:nth-child(odd) {
+            background-color: #04b0f4;
+        }
+
+/* #region form-check*/
+.form-check {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    justify-content: flex-start;
+    padding-left: 0px !important;
+    margin-bottom: 1em !important;
+}
+
+    .form-check input[type="checkbox"] {
+        margin-right: 5px;
+    }
+/* #endregion */
+
+/* #region Custom Checkbox with ripple effect */
+.custom-checkbox {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+}
+
+.custom-checkbox-label {
+    position: relative;
+    padding-left: 35px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+    .custom-checkbox-label::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 22px;
+        height: 22px;
+        border: 2px solid #dee2e6;
+        background-color: #fff;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .custom-checkbox-label::after {
+        content: "";
+        position: absolute;
+        left: 9px;
+        top: 5px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg) scale(0);
+        opacity: 0;
+        transition: all 0.2s ease;
+    }
+
+/* Hover state */
+.custom-checkbox:not(:disabled) ~ .custom-checkbox-label:hover::before {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+/* Checked state */
+.custom-checkbox:checked ~ .custom-checkbox-label::before {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    transform: scale(1.05);
+}
+
+.custom-checkbox:checked ~ .custom-checkbox-label::after {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+    animation: check-animation 0.2s ease-in-out;
+}
+
+/* Disabled state */
+.custom-checkbox:disabled ~ .custom-checkbox-label {
+    cursor: not-allowed;
+}
+
+    .custom-checkbox:disabled ~ .custom-checkbox-label::before {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+
+/* Ripple effect */
+.ripple {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    transform: scale(0);
+    background: rgba(13, 110, 253, 0.3);
+    animation: ripple 0.6s linear;
+}
+
+/* Animations */
+@keyframes check-animation {
+    0% {
+        opacity: 0;
+        transform: rotate(45deg) scale(0.8);
+    }
+
+    100% {
+        opacity: 1;
+        transform: rotate(45deg) scale(1);
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+/* #endregion Custom Checkbox with ripple effect */
+
+

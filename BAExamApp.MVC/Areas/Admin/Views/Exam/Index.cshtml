@@ -1,0 +1,824 @@
+﻿@model X.PagedList.IPagedList<AdminExamListVM>
+@using BAExamApp.MVC.Areas.Admin.Models.ApiUserVMs
+@using Microsoft.Extensions.Localization
+@using X.PagedList
+@using X.PagedList.Mvc.Common
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc.Core.Common
+@inject IStringLocalizer<SharedModelResource> localizer
+
+@{
+    ViewData["Title"] = SharedLocalizer["All_Exam_List"];
+    var currentPageSize = ViewBag.PageSize ?? 10;
+}
+@{
+    Html.RenderPartial("~/Areas/Admin/Views/Animation/_LoaderAnimationPartialView.cshtml");
+}
+
+<head>
+    <link href="~/css/classroom-filter.css" rel="stylesheet" />
+    <link href="~/newlayouts/dist/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/newlayouts/dist/assets/css/style.bundle.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    @* <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css"> *@
+</head>
+<style>
+    .tooltip-inner {
+        max-width: 350px !important;
+    }
+</style>
+<style>
+    #kt_datatable_example_1_wrapper .dataTables_scrollBody table tbody tr {
+        display: block !important;
+        margin-top: 0px !important; /* İhtiyaca göre ayarlayabilirsiniz */
+    }
+
+    #kt_datatable_example_1_wrapper .dataTables_scrollBody table tbody {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+</style>
+
+<style>
+    /* /* Genel görünüm */
+    .ui-datepicker {
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        background: #fff;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        z-index: 9999 !important;
+    }
+
+    /* Başlık kısmı (ay ve yıl) */
+    .ui-datepicker-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    /* Ay ve yıl select’leri */
+    .ui-datepicker select.ui-datepicker-month,
+    .ui-datepicker select.ui-datepicker-year {
+        font-size: 14px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+        color: #333;
+    }
+
+    /* Önceki ve sonraki ay butonları */
+    .ui-datepicker-prev, .ui-datepicker-next {
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #666;
+        font-weight: bold;
+        font-size: 16px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        border-radius: 50%;
+    }
+
+        .ui-datepicker-prev:hover, .ui-datepicker-next:hover {
+            background-color: #f1f1f1;
+        }
+
+    /* Gün isimleri */
+    .ui-datepicker th {
+        font-weight: 500;
+        color: #4b4b4b;
+        padding: 5px 0;
+    }
+
+    /* Gün kutuları */
+    .ui-datepicker td {
+        padding: 0;
+    }
+
+        .ui-datepicker td a {
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            border-radius: 6px;
+            transition: background 0.2s;
+            margin: 2px;
+        }
+
+            /* Hover ve bugün */
+            .ui-datepicker td a:hover {
+                background: #f1f5f9;
+            }
+
+    .ui-datepicker-today a {
+        background-color: #e3f2fd !important;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    /* Seçili gün */
+    .ui-datepicker .ui-state-active {
+        background: #009EF7 !important;
+        color: white !important;
+    }
+
+    /* Hücre kenar çizgilerini kaldır */
+    .ui-datepicker table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .ui-datepicker-close {
+        display: none !important;
+    }
+
+    .ui-datepicker-buttonpane {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3em;
+    }
+
+    .ui-datepicker-clear {
+        order: -1; /* sola */
+    }
+
+    .ui-datepicker-buttonpane button {
+        background: none !important;
+        border: none !important;
+        color: #007bff !important;
+        box-shadow: none !important;
+        font-weight: normal !important; /* İnce yazı */
+        cursor: pointer;
+        padding: 4px 8px;
+    }
+
+        .ui-datepicker-buttonpane button:hover {
+            text-decoration: underline;
+        }
+
+</style>
+
+<section class="section dashboard">
+    <div class="card card-docs flex-row-fluid mb-2" id="kt_docs_content_card">
+        <div class="card-body fs-6 py-15 px-10 py-lg-15 px-lg-15 text-gray-700">
+            <div class="d-flex justify-content-between mb-7">
+                <h5 style="display: flex; align-items: center;">
+                    @SharedLocalizer["Exam_List"]
+
+                    <span class="material-symbols-outlined" style="margin-left: 5px; font-size: 130%; " data-bs-toggle="tooltip" data-bs-placement="right" title="" data-bs-original-title="@SharedLocalizer["Exam_Filter_Warning"]">
+
+                        info
+
+                    </span>
+
+                </h5>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_exam">
+                    <!--begin::Svg Icon | path: icons/duotune/arrows/arr075.svg-->
+                    <span class="svg-icon svg-icon-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor" />
+                            <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor" />
+                        </svg>
+                    </span>
+                    <!--end::Svg Icon--> @SharedLocalizer["Create", SharedLocalizer["Exam"]]
+                </button>
+            </div>
+            <div>
+                <div data-kt-docs-table-toolbar="base">
+                    <form class="formClassroom" asp-area="Admin" asp-controller="Exam" asp-action="Index" method="get" onsubmit="return onSubmitForm()">
+                        <div class="classroomfilter flex-row">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-floating mb-2">
+                                        <select class="form-select form-select-solid" data-control="select2" id="className" name="className">
+                                            <option value="">@SharedLocalizer["Choose"]</option>
+                                            @foreach (var item in ViewBag.Classrooms)
+                                            {
+                                                var itemValue = item.Value?.ToString();
+                                                var selectedClassName = ViewBag.SelectedClassName?.ToString();
+
+                                                if (itemValue == selectedClassName)
+                                                {
+                                                    <option value="@itemValue" selected="selected">@item.Text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@itemValue">@item.Text</option>
+                                                }
+                                            }
+                                        </select>
+                                        <label>@SharedLocalizer["Classroom_Name"]</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-floating mb-5">
+                                        <select class="form-select form-select-solid" data-control="select2" id="ruleName" name="ruleName">
+                                            <option value="">@SharedLocalizer["Choose"]</option>
+                                            @foreach (var item in ViewBag.ExamRules)
+                                            {
+                                                var itemValue = item.Value?.ToString();
+                                                var selectedRuleName = ViewBag.SelectedRuleName?.ToString();
+
+                                                if (itemValue == selectedRuleName)
+                                                {
+                                                    <option value="@itemValue" selected="selected">@item.Text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@itemValue">@item.Text</option>
+                                                }
+                                            }
+                                        </select>
+                                        <label>@SharedLocalizer["Exam_Rule"]</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <div class="form-floating mb-5">
+                                        <input type="text" class="form-control form-control-solid"
+                                               id="openingDateDisplay" placeholder="@SharedLocalizer["Start_Time"]"/>
+                                        <input type="hidden" name="startDate" id="openingDate"
+                                               value="@ViewBag.SelectedStartDate"/>
+                                        <label>@SharedLocalizer["Start_Time"]</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <div class="form-floating mb-5">
+                                        <input type="text" class="form-control form-control-solid"
+                                               id="closedDateDisplay" placeholder="@SharedLocalizer["End_Time"]"/>
+                                        <input type="hidden" name="endDate" id="closedDate"
+                                               value="@ViewBag.SelectedEndDate"/>
+                                        <label>@SharedLocalizer["End_Time"]</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <button type="submit" id="searchButton" class="btn btn-primary hover-elevate-up">@SharedLocalizer["Show"]</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            <div id="kt_datatable_example_1_wrapper" class="dataTables_wrapper dt-bootstrap-4 no-footer">
+                <div class="table-responsive">
+                    @if (ViewBag.ShowAllData == false)
+                    {
+
+                    }
+                    else
+                    {
+                        <table id="kt_datatable_example_1" class="table table-row-dashed fs-6 gy-5">
+
+                            <thead>
+
+                                <tr class="text-start text-gray-400 fw-bolder fs-7 text-uppercase gs-0">
+                                    <th>@SharedLocalizer["Exam_Name"]</th>
+                                    <th>@SharedLocalizer["Exam_Rule_Name"]</th>
+                                    <th>@SharedLocalizer["Exam_Type"]</th>
+                                    <th>@SharedLocalizer["Exam_Date"]</th>
+                                    <th>@SharedLocalizer["Exam_Duration"]</th>                                   
+                                    <th>@SharedLocalizer["Exam_Attendance_Status"]</th>
+                                    <th>@SharedLocalizer["Class_Grade_Average"]</th>                                  
+                                    <th>@SharedLocalizer["Exam_State"]</th>
+                                    <th>@SharedLocalizer["The_Status"]</th>
+                                    <th>@SharedLocalizer["Exam_Operations"]</th>
+
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 fw-bold ">
+
+                                @foreach (var item in Model)
+                                {
+                                    if (!string.IsNullOrEmpty(item.Name))
+
+                                    {
+
+                                        <tr>
+
+                                            <td class="categories text-left">
+                                                <a data-bs-toggle="tooltip" data-bs-placement="right" data-placement="top" title="@item.Name">
+                                                    <span class="post_category" style="white-space: nowrap;">@Html.Raw(item.Name.Length > 30 ? item.Name.Substring(0, 30) + "..." : item.Name)</span>
+                                                </a>
+                                            </td>
+
+                                            <td class="categories text-left">
+                                                <a data-bs-toggle="tooltip" data-bs-placement="right" data-placement="top" title="@item.ExamRuleName">
+                                                    <span class="post_category" style="white-space: nowrap;">@Html.Raw(item.ExamRuleName.Length > 30 ? item.ExamRuleName.Substring(0, 30) + "..." : item.ExamRuleName)</span>
+                                                </a>
+                                            </td>
+                                            <td class="categories text-left">
+                                                <a>
+                                                    <span class="post_category">@item.ExamType</span>
+                                                </a>
+                                            </td>
+                                            <td class="categories text-center">
+                                                <a>
+                                                    <span class="post_category">@item.ExamDateTime</span>
+                                                </a>
+                                            </td>
+                                            <td class="categories text-center">
+                                                <a>
+                                                    <span class="post_category">@($"{item.ExamDuration.Hours:D2}:{item.ExamDuration.Minutes:D2}")</span>
+                                                </a>
+                                            </td>
+                                            <td class="categories text-center">
+                                                <a>
+                                                    <span class="post_category">@item.StudentExamScoreCount / @item.StudentCount</span>
+                                                </a>
+                                            </td>
+                                            <td class="categories text-center">
+                                                <a>
+                                                    @if (item.ClassGradeAverage != null)
+                                                    {
+                                                        <span class="post_category">@item.ClassGradeAverage</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="post_category">@SharedLocalizer["Exam_Result_Info_Not_Available"]</span>
+                                                    }
+                                                </a>
+                                            </td>
+                                            <td class="categories text-center">
+                                                <a>
+                                                    @if (item.IsStarted)
+                                                    {
+                                                        <span class="post-category text-success">@SharedLocalizer["Started"]</span>
+                                                    }
+                                                    else if (!item.IsStarted && item.ExamDateTime < DateTime.Now)
+                                                    {
+                                                        <span class="post-category text-danger">@SharedLocalizer["Expired"]</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="post-category text-warning">@SharedLocalizer["Not_Started"]</span>
+
+                                                    }
+                                                </a>
+                                            </td>
+                                            <td class="categories text-center">
+                                                <a>
+                                                    @if (item.IsCanceled == true)
+                                                    {
+                                                        <span class="post-category text-danger">@SharedLocalizer["Cancelled"]</span>
+                                                    }
+                                                    else if (item.IsTest == true)
+                                                    {
+                                                        <span class="post-category text-warning">@SharedLocalizer["Practice_Exam"]</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="post-category text-success">@SharedLocalizer["Not_Cancelled"]</span>
+
+                                                    }
+                                                </a>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="dropdown">
+
+                                                    <button class="btn btn-light btn-active-light-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-extended="false">
+                                                        @SharedLocalizer["Options"]
+                                                    </button>
+
+                                                    <ul class="dropdown-menu dropdown-menu-end menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" aria-labelledby="dropdownMenuButton">
+                                                        <li class="menu-item px-3">
+                                                            <a asp-action="Details" asp-route-id="@item.Id" class="menu-link px-3" data-kt-docs-table-filter="edit_row">@SharedLocalizer["Details"]</a>
+                                                        </li>
+                                                        @if (item.ExamType == ExamType.Standard)
+                                                        {
+                                                            <li class="menu-item px-3">
+                                                                <a asp-action="AddEvaluators" asp-route-id="@item.Id" class="menu-link px-3" data-kt-docs-table-filter="edd_row">@SharedLocalizer["Add_Evaluators"]</a>
+                                                            </li>
+                                                        }
+                                                        @if (item.ExamDateTime > DateTime.Now && !item.IsStarted)
+                                                        {
+                                                            <li class="menu-item px-3">
+                                                                <a class="menu-link px-3" onclick="StartExam('@item.Id')" data-exam-id="@item.Id">@SharedLocalizer["Start_Exam"]</a>
+                                                            </li>
+                                                        }
+                                                        @if (!item.IsStarted && item.ExamDateTime < DateTime.Now)
+                                                        {
+                                                            <li class="menu-item px-3">
+                                                                <a asp-action="Update" asp-route-id="@item.Id" class="menu-link px-3" data-kt-docs-table- filter="edit_row">@SharedLocalizer["Reschedule_Exam"]</a>
+                                                            </li>
+                                                        }
+                                                        @if (item.ExamDateTime.Add(item.ExamDuration) < DateTime.Now && item.IsCanceled == false && item.IsTest == false)
+                                                        {
+                                                            <li class="menu-item px-3">
+                                                                <a class="menu-link px-3" id="cancel-exam" onclick="cancelExamById('@item.Id')">@SharedLocalizer["Is_Canceled"]</a>
+                                                            </li>
+                                                        }
+                                                        <li class="menu-item px-3">
+                                                            <a class="menu-link px-3" id="delete-exam" onclick="deleteExamById('@item.Id')">@SharedLocalizer["Delete"]</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+
+                                        </tr>
+
+                                    }
+
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
+                                <div class="dataTables_length" id="kt_table_users_length">
+                                    <label>
+                                        <select id="pageSizeDropdown" name="kt_table_users_length" aria-controls="kt_table_users" class="form-select form-select-sm form-select-solid">
+                                            <option value="10">10</option>
+                                            <option value="25">25</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <div class="col-5" style="margin-left:10px">
+                                    <span class="text" style="white-space: nowrap;">
+                                        @SharedLocalizer["Total"] @Model.TotalItemCount @SharedLocalizer["From"] @(Model.PageNumber * Model.PageSize - (Model.PageSize - 1))
+                                        @SharedLocalizer["To"] @(Model.PageNumber * Model.PageSize > Model.TotalItemCount ? Model.TotalItemCount : Model.PageNumber * Model.PageSize)
+                                        @SharedLocalizer["Records_Are_Being_Displayed"]
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-3">
+                                @Html.PagedListPager(Model, page =>
+                                             Url.Action("Index", new { 
+                                                 page, 
+                                                 pageSize = ViewBag.PageSize, 
+                                                 className = ViewBag.SelectedClassName, 
+                                                 ruleName = ViewBag.SelectedRuleName,
+                                                 startDate = ViewBag.SelectedStartDate,
+                                                 endDate = ViewBag.SelectedEndDate
+                                             }),
+                                         new PagedListRenderOptions
+                                        {
+                                            Display = PagedListDisplayMode.Always,
+                                            UlElementClasses = new[] { "pagination", "justify-content-center" },
+                                            LiElementClasses = new[] { "page-item" },
+                                            PageClasses = new[] { "page-link" },
+                                            LinkToFirstPageFormat = @localizer["First"],
+                                            LinkToLastPageFormat = @localizer["Last"],
+                                            ContainerDivClasses = new[] { "d-flex", "justify-content-center" }
+                                        }
+                                )
+                            </div>
+
+                        </div>
+                    }
+                    <!--start-exam-loading-->
+                </div>
+
+            </div>
+
+        </div>
+
+        <!--end::Datatable-->
+
+    </div>
+
+    </div>
+
+</section>
+
+@{
+    AdminExamCreateVM storedExamCreateVM = ViewBag.StoredExam as AdminExamCreateVM;
+    storedExamCreateVM = storedExamCreateVM is null ? new AdminExamCreateVM() : storedExamCreateVM;
+}
+
+
+<partial name="~/Areas/Admin/Views/Exam/_CreatePartialView.cshtml" model="storedExamCreateVM" />
+
+
+@section Scripts
+{
+    <script src="~/newlayouts/src/js/custom/apps/user-management/users/list/start-exam.js"></script>
+    <script src="~/newlayouts/src/js/custom/apps/user-management/users/view/add-exam.js"></script>
+    <script src="~/newlayouts/src/js/custom/apps/user-management/users/list/delete-exam.js"></script>
+    <script src="~/newlayouts/src/js/custom/apps/user-management/users/list/isCanceled-exam.js"></script>   
+    <!-- flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Türkçe locale dosyası -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
+    <script>
+        var localizedTexts = {
+            unsavedChangesTitle: '@SharedLocalizer["Unsaved_Changes_Title"]',
+            unsavedChangesText: '@SharedLocalizer["Unsaved_Changes_Text"]',
+            confirmButtonText: '@SharedLocalizer["Yes_Leave"]',
+            cancelButtonText: '@SharedLocalizer["No_Stay"]',
+            formSubmittedText: '@SharedLocalizer["Form_Submitted_Text"]',
+            okButtonText: '@SharedLocalizer["Ok_Button_Text"]',
+            startExamConfirmation: '@SharedLocalizer["Start_Exam_Confirmation"]',
+            yesStart: '@SharedLocalizer["Yes_Start"]',
+            noCancel: '@SharedLocalizer["No_Cancel"]',
+            confirmTitle: '@SharedLocalizer["Confirm_Delete_Title"]',
+            confirmText: '@SharedLocalizer["Confirm_Delete_Text"]',
+            confirmDeleteButtonText: '@SharedLocalizer["Confirm_Button_Text"]',
+            cancelDeleteButtonText: '@SharedLocalizer["Cancel_Button_Text"]',
+            reschudleExamText: '@SharedLocalizer["Reschedule_Exam"]',
+            confirmCancelTitle: '@SharedLocalizer["Confirm_Cancel_Title"]',
+            confirmCancelText: '@SharedLocalizer["Confirm_Cancel_Text"]',
+            confirmCancelButtonText: '@SharedLocalizer["Confirm_CancelButton_Text"]',
+            cancelCancelButtonText: '@SharedLocalizer["Cancel_CancelButton_Text"]',
+            examTypeRequiredText: '@SharedLocalizer["Exam_Type_Required"]',
+            examRuleRequiredText: '@SharedLocalizer["Exam_Rule_Required"]',
+            examDateTimeInvalidText: '@SharedLocalizer["Exam_DateTime_Invalid"]',
+            examCreationTypeRequiredText: '@SharedLocalizer["Exam_Creation_Type_Required"]',
+            examClassroomsRequiredText: '@SharedLocalizer["Exam_Classrooms_Required"]',
+        };
+        var localizer = {
+            emptyTable: '@SharedLocalizer["Empty_Data"]',
+            info: '@SharedLocalizer["Info"]',
+            infoEmpty: '@SharedLocalizer["Info_Empty"]',
+            infoFiltered: '@SharedLocalizer["Info_Filtered"]',
+            zeroRecords: '@SharedLocalizer["Zero_Records"]'
+        };
+
+        // Scroll hareket ettirildiğinde option menüsünü kapatır.
+        $(document).ready(function () {
+            $(window).on('scroll', function () {
+                $('.dropdown-menu.show').removeClass('show');
+                $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                console.log("Scroll hareketi çalıştı.")
+            });
+
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var currentPageSize = @currentPageSize;
+            document.getElementById('pageSize').value = currentPageSize;
+        });
+
+        function changePageSize() {
+            var pageSize = document.getElementById('pageSize').value;
+            var url = new URL(window.location.href);
+            url.searchParams.set('pageSize', pageSize);
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        $(document).ready(function () {
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                title: function () {
+                    return $(this).attr('data-bs-original-title');
+                }
+            });
+        });
+        function onSubmitForm() {
+            var searchButton = document.getElementById("searchButton");
+            var nameSelect = document.getElementById("name");
+            var branchSelect = document.getElementById("branchName");
+            var groupTypeSelect = document.getElementById("groupType");
+            var openingDateInput = document.getElementById("openingDate");
+            var closedDateInput = document.getElementById("closedDate");
+
+            if (!nameSelect.value && !branchSelect.value && !groupTypeSelect.value && !openingDateInput.value && !closedDateInput.value) {
+                window.location.href = "@Url.Action("Index", new { showAllData = true })";
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var divElements = document.querySelectorAll('div');
+            divElements.forEach(function (divElement) {
+                var selectElement = divElement.querySelector('select');
+                if (selectElement) {
+                    sortSelectOptionsNumerically(selectElement);
+                }
+            });
+
+            function sortSelectOptionsNumerically(selectElement) {
+                var options = Array.from(selectElement.options);
+                options.sort(function (a, b) {
+                    return parseInt(a.value, 10) - parseInt(b.value, 10);
+                });
+                options.forEach(function (option) {
+                    selectElement.add(option);
+                });
+            }
+
+        });    
+
+        $(document).ready(function () {
+            $('#ExamRuleId').change(async function () {
+                const selectedRuleId = $(this).val();
+
+                if (selectedRuleId) {
+                    $('#loader-notification').show();
+
+                    try {
+                        const response = await $.ajax({
+                            url: '@Url.Action("GetTotalTimeByRule", "Exam")',
+                            type: 'GET',
+                            data: { examRuleId: selectedRuleId }
+                        });
+                        $('#ExamDuration').val(response.totalTime);
+                    } catch (error) {
+                        alert('@ViewLocalizer["ErrorCalculatingTotalTime"]');
+                    } finally {
+                        $('#loader-notification').hide();
+                    }
+                }
+            });
+        });
+
+        function parseTime(timeString) {
+            const parts = timeString.split(':');
+            const hours = parseInt(parts[0], 10) || 0;
+            const minutes = parseInt(parts[1], 10) || 0;
+            const seconds = parseInt(parts[2], 10) || 0;
+            if (seconds > 0) {
+                return (hours * 60) + minutes + 1;
+            }
+
+            return (hours * 60) + minutes;
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            // ViewBag'den gelen değerlerin kontrolü
+            var currentPageSize = '@ViewBag.PageSize' || '10'; // Varsayılan değer 10
+            var currentPage = '@ViewBag.PageNumber' || '1'; // Varsayılan değer 1
+
+            // Dropdown'da mevcut değeri ayarla
+            $('#pageSizeDropdown').val(currentPageSize);
+
+            // Dropdown değişim olayı
+            $('#pageSizeDropdown').change(function () {
+                var selectedPageSize = $(this).val(); // Seçili sayfa boyutunu al
+                var url = '@Url.Action("Index", "Exam")'; // Hedef URL'yi al
+
+                // Yeni URL oluştur
+                window.location.href = `${url}?page=${currentPage}&pageSize=${selectedPageSize}&showAllData=true`;
+            });
+        });
+    </script>
+
+    <!-- jQuery UI -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+    <script>
+        (function ($) {
+            $.datepicker.regional['tr'] = {
+                closeText: 'Kapat',
+                prevText: 'Önceki',
+                nextText: 'Sonraki',
+                currentText: 'Bugün',
+                ClearText: "Temizle",
+                monthNames: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
+                monthNamesShort: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+                dayNames: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
+                dayNamesShort: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
+                dayNamesMin: ['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct'],
+                weekHeader: 'Hf',
+                dateFormat: 'dd.mm.yy',
+                firstDay: 1,
+                isRTL: false,
+                showMonthAfterYear: false,
+                yearSuffix: ''
+            };
+        })(jQuery);
+    </script>
+
+    <script>
+        // jQuery UI Datepicker'ın _gotoToday metodunu override ediyoruz
+        $.datepicker._gotoToday = function (id) {
+            var target = $(id);
+            var inst = this._getInst(target[0]);
+            var date = new Date();
+            this._setDate(inst, date);
+            this._hideDatepicker();
+
+            // Tarihi input'a yaz
+            const region = $.datepicker.regional['@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName'] || $.datepicker.regional['tr'];
+            const formattedDate = $.datepicker.formatDate(region.dateFormat, date);
+            target.val(formattedDate);
+
+            // ISO formatlı gizli alanı da güncelle
+            $("#closedDate").val(parseToIso(formattedDate, region.dateFormat));
+            $("#openingDate").val(parseToIso(formattedDate, region.dateFormat));
+        };
+
+        $(function () {
+            const culture = '@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName';
+            const region = $.datepicker.regional[culture] || $.datepicker.regional['tr'];
+
+            $.datepicker.setDefaults(region);
+
+            $("#openingDateDisplay").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                showButtonPanel: true,
+                closeText: region.closeText,
+                currentText: region.currentText,
+                onSelect: function (dateText) {
+                    $("#openingDate").val(parseToIso(dateText, region.dateFormat));
+                },
+                beforeShow: function (input, inst) {
+                    setTimeout(function () {
+                        var buttonPane = $(input).datepicker("widget").find(".ui-datepicker-buttonpane");
+                        var btn = $('<button>', {
+                            text: (culture === 'tr' ? "Temizle" : "Clear"),
+                            click: function (e) {
+                                e.preventDefault();
+                                const exampleFormat = (culture === 'tr') ? 'gg.aa.yyyy' : 'dd.mm.yyyy';
+                                $("#openingDateDisplay").val(exampleFormat);
+                                $("#openingDate").val('');
+                            },
+                            class: "ui-datepicker-clear ui-state-default ui-priority-primary ui-corner-all"
+                        });
+
+                        if (buttonPane.find(".ui-datepicker-clear").length === 0) {
+                            btn.appendTo(buttonPane);
+                        }
+                    }, 1);
+                }
+            });
+
+            $("#closedDateDisplay").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                showButtonPanel: true,
+                closeText: region.closeText,
+                currentText: region.currentText,
+                onSelect: function (dateText) {
+                    $("#closedDate").val(parseToIso(dateText, region.dateFormat));
+                },
+                beforeShow: function (input, inst) {
+                    setTimeout(function () {
+                        var buttonPane = $(input).datepicker("widget").find(".ui-datepicker-buttonpane");
+                        var btn = $('<button>', {
+                            text: (culture === 'tr' ? "Temizle" : "Clear"),
+                            click: function (e) {
+                                e.preventDefault();
+                                const exampleFormat = (culture === 'tr') ? 'gg.aa.yyyy' : 'dd.mm.yyyy';
+                                $("#closedDateDisplay").val(exampleFormat);
+                                $("#closedDate").val('');
+                            },
+                            class: "ui-datepicker-clear ui-state-default ui-priority-primary ui-corner-all"
+                        });
+
+                        if (buttonPane.find(".ui-datepicker-clear").length === 0) {
+                            btn.appendTo(buttonPane);
+                        }
+                    }, 1);
+                }
+            });
+
+            var rawDate = '@(ViewBag.CreatedDate != null ? ((DateTime)ViewBag.CreatedDate).ToString(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "tr" ? "dd.MM.yyyy" : "MM/dd/yyyy") : "")';
+            var localizedPlaceholder = '@SharedLocalizer["Date_Format"]';
+            $("#openingDateDisplay").val(rawDate || localizedPlaceholder);
+            $("#closedDateDisplay").val(rawDate || localizedPlaceholder);
+        });
+
+        function parseToIso(dateText, format) {
+            if (!dateText || !format) return null;
+
+            const separators = /[-./]/;
+            const dateParts = dateText.split(separators);
+            const formatParts = format.toLowerCase().split(separators);
+
+            let day, month, year;
+
+            for (let i = 0; i < formatParts.length; i++) {
+                switch (formatParts[i]) {
+                    case 'dd':
+                        day = dateParts[i];
+                        break;
+                    case 'mm':
+                        month = dateParts[i];
+                        break;
+                    case 'yy':
+                    case 'yyyy':
+                        year = dateParts[i];
+                        break;
+                }
+            }
+
+            if (!year || !month || !day) return null;
+
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+    </script>
+}
+
+

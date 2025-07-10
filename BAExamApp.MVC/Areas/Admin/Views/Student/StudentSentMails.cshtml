@@ -1,0 +1,356 @@
+﻿@model X.PagedList.IPagedList<AdminStudentMailListVM>
+@using Microsoft.Extensions.Localization
+@using X.PagedList
+@using X.PagedList.Mvc.Common
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc.Core.Common
+@inject IStringLocalizer<SharedModelResource> localizer
+
+
+@{
+	ViewData["Title"] = "StudentSentMails";
+
+
+	
+	var studentFullName = ViewBag.StudentFullName as string ?? "";
+	if (!string.IsNullOrEmpty(studentFullName) && studentFullName.Contains(" "))
+	{
+		var names = studentFullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		if (names.Length > 1)
+		{
+			var formattedFullName = names[0] + " " + char.ToUpper(names[1][0]) + names[1].Substring(1);
+
+			if (names.Length > 2) // Üçüncü isim varsa ekle
+			{
+				formattedFullName += " " + names[2];
+			}
+			studentFullName = formattedFullName;
+		}
+	}
+
+	var studentEmail = ViewBag.StudentEmail as string ?? "Bilinmiyor";
+	var latestClassroom = !string.IsNullOrEmpty(ViewBag.LatestClassroom as string)
+		? ViewBag.LatestClassroom
+		: "Bulunmuyor";
+
+	var latestTrainers = !string.IsNullOrEmpty(ViewBag.LatestTrainers as string)
+		? ViewBag.LatestTrainers
+		: "Bulunmuyor";
+}
+<style>
+	td, th {
+		text-align: center;
+	}
+
+	.table tr {
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+	}
+
+	.table td, .table th {
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+	}
+	tr {
+		display: flex;
+		align-items: center;
+	}
+
+	th.categories, td.categories {
+		flex: 1; 
+	}
+
+	#kt_datatable_example_2 td {
+		text-align: center !important; /* Tüm hücreleri ortala */
+		vertical-align: middle !important; /* Dikey olarak ortala */
+	}
+</style>
+
+<div class="card">
+	<div class="card-header d-flex flex-column p-5 ">
+		<h5>  <b>@SharedLocalizer["Name"] </b>: &nbsp;<span class="text-gray-600">@studentFullName</span>   </h5>
+		<h5>  <b>@SharedLocalizer["Email"] </b>: &nbsp;<span class="text-gray-600">@studentEmail</span>   </h5>
+		<h5>  <b>@SharedLocalizer["Classrooms"]</b>:&nbsp;<span class="text-gray-600"> @latestClassroom</span></h5>
+		<h5>  <b>@SharedLocalizer["Trainers"]</b>: &nbsp;<span class="text-gray-600">@latestTrainers</span> </h5>
+	</div>
+	<div class="card-body">
+		<div>
+
+
+			<div>
+				<!-- Notification Success -->
+				@if (TempData["SuccessMessage"] != null)
+				{
+					<div class="alert alert-success" role="alert">
+						@TempData["SuccessMessage"]
+					</div>
+				}
+
+				<!-- Notification Error -->
+				@if (TempData["ErrorMessage"] != null)
+				{
+					<div class="alert alert-danger" role="alert">
+						@TempData["ErrorMessage"]
+					</div>
+				}
+			<!-- Öğrenci Mail Filtreleme Yeri -->
+			<form class="formStudentMail" asp-area="Admin" asp-controller="Student" asp-action="StudentSentMails" method="GET">
+				<div class="studentmailfilter flex-row">
+					<div class="row">
+						<div class="col-md-3">
+							<div class="form-floating mb-2">
+								<select class="form-select form-select-solid" id="mailStatus" name="mailStatus">
+									<option value="" disabled selected> @SharedLocalizer["Choose"]</option>
+									<option value=true> @SharedLocalizer["Sent"] </option>
+									<option value=false> @SharedLocalizer["NotSent"] </option>
+								</select>
+								<label>@SharedLocalizer["Status"]</label>
+							</div>
+						</div>
+						<div class="col-md-3 mb-2">
+							<div class="form-floating mb-2">
+								<input type="date" class="form-control form-control-solid" name="sendingDate" placeholder="@SharedLocalizer["Date"]" id="sendingDate" />
+								<label>@SharedLocalizer["Date"]</label>
+							</div>
+						</div>
+
+						<input type="hidden" name="email" value="@studentEmail" />
+
+						<div class="col-md-3 mb-2">
+							<button type="submit" id="searchButton" class="btn btn-primary hover-elevate-up">@SharedLocalizer["Show"]</button>
+						</div>
+					</div>
+				</div>		
+			</form>
+		</div>
+
+		<div class="tab-content" id="myTabContent">
+			<table id="kt_datatable_example_2" class="table align-middle fs-6 gy-5">
+				<thead>
+					<tr class="text-start fw-bolder text-uppercase gs-0 text-gray-400">
+						<th class="categories text-start">BAŞLIK</th>
+						<th class="categories text-center">DURUMU</th>
+						<th class="categories text-start">GÖNDERİM TARİHİ</th>
+						<th class="categories text-start">DETAYLARI</th>
+					</tr>
+				</thead>
+				<tbody>
+				@if (Model != null && Model.Count > 0 )
+				{
+					@foreach (var studentSentMail in Model)
+					{
+						string subject = studentSentMail.Subject.Length > 50 ? studentSentMail.Subject.Substring(0, 50) + "..." : studentSentMail.Subject;
+						string content = studentSentMail.Content.Length > 50 ? studentSentMail.Content.Substring(0, 50) + "..." : studentSentMail.Content;
+
+						<tr class="text-start fw-bolder">
+							<td class="categories text-start text-gray-600">
+								<div style="display: inline-block; padding-left: 20px;">
+									<a>
+										<span class="post_category">@subject</span>
+									</a>
+								</div>
+							</td>
+							<td class="categories text-center text-gray-600">
+								<div style="display: inline-block;">
+									@if (studentSentMail.IsSuccess)
+									{
+										<a>
+											<span class="post_category text-success">@SharedLocalizer["Sent"]</span>
+										</a>
+									}
+									else
+									{
+										<form method="post" asp-controller="Student" asp-action="ResendStudentEmail">
+											<input type="hidden" name="sentMailId" id="resend-email" />
+											<button type="submit" class="btn btn-primary">@SharedLocalizer["Send_Again"]</button>
+										</form>
+									}
+								</div>
+							</td>
+							<td class="categories text-start text-gray-600" typeof="date">
+								<div style="display: inline-block; padding-left: 20px;" typeof="date">
+									<a>
+										<span class="post_category" itemtype="date">@studentSentMail.ModifiedDate</span>
+									</a>
+								</div>
+							</td>
+							<td class="categories text-start text-gray-600">
+								<div style="display: inline-block;">
+									<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_sent_mail_detail" data-sent-mail-id="@studentSentMail.Id" data-mail-content="@studentSentMail.Content" data-mail-subject="@studentSentMail.Subject" data-student-name="@studentFullName" data-student-mail="@studentEmail">
+										@SharedLocalizer["View_Detail"]
+									</button>
+								</div>
+							</td>
+						</tr>
+						}
+					}
+					else
+					{
+
+						<tr class="text-start fw-bolder">
+							<td class="categories text-start text-gray-600">
+								<div class="class="d-flex flex-column align-items-center">
+									<span text-gray-500 fs-6 fw-bold">@SharedLocalizer["No_Results_Found"]</span>
+								</div>
+							</td>
+						</tr>
+
+					}
+				</tbody>
+			</table>
+
+			<!-- Sayfalama -->
+			<div class="d-flex justify-content-between align-items-center flex-wrap">
+				<div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
+					<div class="dataTables_length" id="kt_table_users_length">
+						<label>
+							<select id="pageSizeDropdown" name="kt_table_users_length" aria-controls="kt_table_users" class="form-select form-select-sm form-select-solid">
+								<option value="10">10</option>
+								<option value="25">25</option>
+								<option value="50">50</option>
+								<option value="100">100</option>
+							</select>
+						</label>
+					</div>
+
+					<div class="col-5" style="margin-left:10px">
+						<span class="text" style="white-space: nowrap;">
+							@SharedLocalizer["Total"] @Model.TotalItemCount @SharedLocalizer["From"] @(Model.PageNumber * Model.PageSize - (Model.PageSize - 1))
+							@SharedLocalizer["To"] @(Model.PageNumber * Model.PageSize > Model.TotalItemCount ? Model.TotalItemCount : Model.PageNumber * Model.PageSize)
+							@SharedLocalizer["Records_Are_Being_Displayed"]
+						</span>
+					</div>
+				</div>
+
+				<div class="d-flex justify-content-end mt-3">
+					@Html.PagedListPager(Model, page =>
+											Url.Action("StudentSentMails", new { page, pageSize = ViewBag.PageSize, email = studentEmail }),
+											new PagedListRenderOptions
+					{
+						Display = PagedListDisplayMode.Always,
+						UlElementClasses = new[] { "pagination", "justify-content-center" },
+						LiElementClasses = new[] { "page-item" },
+						PageClasses = new[] { "page-link" },
+						LinkToFirstPageFormat = @localizer["First"],
+						LinkToLastPageFormat = @localizer["Last"],
+						ContainerDivClasses = new[] { "d-flex", "justify-content-center" }
+					}
+											)
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+
+</div>
+
+<partial name="~/Areas/Admin/Views/Student/_SentMailDetailPartialView.cshtml"></partial>
+
+
+<style>
+	button:hover {
+		transform: scale(1.1); /* 1.1 ile 10% büyütülebilir */
+		transition: transform 0.2s ease; /* Yavaşça büyüme efekti */
+	}
+</style>
+		
+	
+@section Scripts {
+	<script>
+		$(document).ready(function () {
+			var dt = $("#kt_datatable_example_2").DataTable({
+				lengthMenu: [10, 25, 50, 100],
+				dom: '<"row"<"col-sm-12"t>>' +
+					'<"row"<"col-sm-12 col-md-1"l><"col-sm-12 col-md-5"i><"col-sm-12 col-md-6"p>>',
+				
+				language: {
+					emptyTable: "Tabloda herhangi bir veri bulunmamaktadır",
+					infoEmpty: "Gösterilecek hiçbir kayıt yok",
+					infoFiltered: "(toplam _MAX_ kayıt içerisinden filtrelenmiştir)",
+					zeroRecords: "Eşleşen kayıt bulunamadı",
+				},
+				order: [[3, 'asc']] // Gönderim Tarihi sütununu azalan sırayla sıralamak için
+
+					
+				});
+			});
+
+			$('body').on('change', 'select[name="kt_datatable_example_2_length"]', function () {
+				dt.page.len($(this).val()).draw();
+				$(this).css({
+					'border': '0 solid transparent',
+					'transition': 'color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out'
+				});
+			});
+
+			dt.on('draw.dt', function () {
+				updateInfoText(dt.page.info());
+			});
+
+			function updateInfoText(pageInfo) {
+				var infoText = pageInfo.recordsTotal + " kayıttan " + (pageInfo.start + 1) + " ile " + pageInfo.end + " arasındaki kayıtlar gösteriliyor";
+				$('#kt_datatable_example_2_info').html(infoText).css({
+					'margin-top': '6px',
+					'font-size': '14px',
+					'font-family': 'Poppins, Helvetica, sans- serif',
+				});
+			}
+
+			updateInfoText(dt.page.info());
+
+			function updatePaginationArrows() {
+				var prevButton = $('#kt_datatable_example_2_previous a');
+				prevButton.html('<i class="fa fa-chevron-left"></i>');
+				var nextButton = $('#kt_datatable_example_2_next a');
+				nextButton.html('<i class="fa fa-chevron-right"></i>');
+				var pageButtons = $('#kt_datatable_example_2_paginate .page-item');
+				var activePage = $('#kt_datatable_example_1_paginate .page-item.active a');
+				activePage.css({
+					'color': '#ffffff'
+				});
+			}
+							$('.btn-primary[data-bs-toggle="modal"]').on('click', function () {
+			 var studentName = $(this).data('student-name');
+					var mailSubject = $(this).data('mail-subject');
+			 var mailContent = $(this).data('mail-content');
+				var sentMailId = $(this).data('sent-mail-id');
+			 var studentMail = $(this).data('student-mail');
+
+			   // Modal alanlarını güncelle
+					$('#detail-student-name').text(studentName);
+					$('#detail-mail-subject').text(mailSubject);
+					$('#detail-mail-content').html(mailContent.replace(/\n/g, '<br>')); // Satır başlarını HTML formatına çevir
+					$('#resend-email').val(sentMailId);
+					$('#detail-student-email').text(studentMail);
+				});
+
+					updatePaginationArrows();
+
+					dt.on('draw.dt', function () {
+						updatePaginationArrows();
+					});
+				});
+	</script>
+
+
+	<script>
+		$(document).ready(function () {
+
+			var currentPageSize = '@ViewBag.PageSize' || '10';
+			$('#pageSizeDropdown').val(currentPageSize);
+
+			$('#pageSizeDropdown').change(function () {
+				var selectedPageSize = $(this).val();
+				var currentPage = '@ViewBag.CurrentPage' || '1';
+				var studentEmailValue = '@studentEmail'.trim();
+
+				window.location.href = '@Url.Action("StudentSentMails", "Student")' +
+					`?page=${currentPage}&pageSize=${selectedPageSize}&email=${studentEmailValue}`;
+			});
+		});
+	</script>
+
+
+
+}

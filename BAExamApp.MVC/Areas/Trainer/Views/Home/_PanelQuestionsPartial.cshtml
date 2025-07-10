@@ -1,0 +1,149 @@
+﻿@using BAExamApp.MVC.Areas.Trainer.Models.DashboardVMs
+@model TrainerDashboardVM
+
+@{
+    List<DashboardQuestionVM> questions = Model.QuestionList;
+}
+
+<link href="~/newLayouts/dist/assets/css/style.bundle.css" rel="stylesheet" />
+
+<div class="col">
+    <div class="card card-xl-stretch mb-xl-8 panel-question-requests mt-4 p-3 h-400px overflow-auto">
+        <div class="border-0 text-center d-flex justify-content-between pt-5 pb-5 card-header-sticky">
+            <div class="card-title d-flex align-items-center pt-4">
+                <h3 class="fw-bolder text-dark">@SharedLocalizer["Questions"]</h3>
+            </div>
+            <div class="border-0 d-flex justify-content-center align-items-center">
+                <ul class="nav nav-pills justify-content-center" id="questionTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="tab1-tab" data-bs-toggle="pill" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">@SharedLocalizer["Approved_Questions"]</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="tab2-tab" data-bs-toggle="pill" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">@SharedLocalizer["Questions_Pending_Approval"]</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="tab3-tab" data-bs-toggle="pill" data-bs-target="#tab3" type="button" role="tab" aria-controls="tab3" aria-selected="false">@SharedLocalizer["Reviewed_Questions"]</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    
+        <div class="tab-content table-responsiveExam mt-3" id="questionTabsContent">
+            @{
+                var tabData = new[] {
+                    new { Id = "tab1", State = State.Approved, TabName = "Approved_Questions" },
+                    new { Id = "tab2", State = State.Awaited, TabName = "Questions_Pending_Approval" },
+                    new { Id = "tab3", State = State.Reviewed, TabName = "Reviewed_Questions" }
+                };
+
+                foreach (var tab in tabData)
+                {
+                    var isActive = tab.Id == "tab1" ? "show active" : "";
+                }
+            }
+
+            @foreach (var tab in tabData)
+            {
+                var filteredQuestions = questions.Where(q => q.State == tab.State).ToList();
+                <div class="tab-pane fade @(tab.Id == "tab1" ? "show active" : "")" id="@tab.Id" role="tabpanel" aria-labelledby="@tab.Id-tab">
+                    @if (filteredQuestions.Any())
+                    {
+                        <table class="table table-bordered text-center custom-table">
+                            <thead class="thead-sticky">
+                            <tr class="text-muted">
+                                <th class="">@SharedLocalizer["Question_Content"]</th>
+                                <th class="text-end pe-1">@SharedLocalizer["Created_Date"]</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var question in filteredQuestions)
+                            {
+                                <tr>
+                                    <td class="text-start">
+                                        <a class="text-gray-800 text-hover-primary fw-bolder fs-6" href="Trainer/Question/QuestionList?state=@tab.State">
+                                            @(question.Content != null && question.Content.Length > 40 ? question.Content.Substring(0, 40) + "..." : question.Content ?? "No Content")
+                                        </a>
+                                    </td>
+                                    <td class="text-start" style="padding-left:86px;">@question.CreatedDate.ToShortDateString()</td>
+                                </tr>
+                                <tr class="table-divider"></tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-center mt-3">@SharedLocalizer["Zero_Records"]</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Anasayfadaki sorular kısmındaki başlıgını ve sekme kısmını sabitleme */
+    .card-header-sticky {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: white;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    /* Anasayfadaki sorular kısmındaki tablonun başlık kısmını sabitleme */
+    .thead-sticky {
+        position: sticky;
+        top: 0;
+        z-index: 9;
+        background-color: white;
+        padding-bottom: 5px;
+    }
+
+    /* tablonun scroll kısmını düzenleme */
+    .table-responsiveExam {
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    table.custom-table th {
+        font-weight: bold;
+        font-size: 15px;
+        width: 200px;
+        text-align: start;
+    }
+
+    table.custom-table select {
+        font-weight: bold;
+        background-color: #f8f9fa;
+        font-size: 15px;
+    }
+
+    table.custom-table tr {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    table.custom-table td {
+        width: 200px;
+        text-align: start;
+    }
+
+    table.custom-table .table-divider {
+        height: 1px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+
+    table.custom-table td {
+        padding: 10px;
+        vertical-align: middle;
+    }
+  
+</style>

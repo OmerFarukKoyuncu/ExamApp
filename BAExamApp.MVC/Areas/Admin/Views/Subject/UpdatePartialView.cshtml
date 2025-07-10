@@ -1,0 +1,141 @@
+﻿@model AdminSubjectUpdateVM
+
+@{
+    ViewData["Title"] = @SharedLocalizer["Update", SharedLocalizer["Subject"]];
+
+    if (Model.ProductIds == null)
+
+    {
+
+        Model.ProductIds = new();
+
+    }
+}
+<div class="modal fade" id="updateSubjectModal" tabindex="-1" aria-labelledby="updateSubjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@SharedLocalizer["Update_Subject"]</h5>
+                <button type="button" class="btn-close backListAction" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="Subject" asp-action="Update" id="kt_modal_update_subject_form" class="form" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <label asp-for="Name" class="col-sm-2 col-form-label col-form-label-lg">@SharedLocalizer["Name"]</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Name" type="text" class="form-control form-control-lg form-control-solid">
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <input asp-for="Id" type="hidden" />
+                    <div class="row mb-3">
+                        <label class="col-sm-2 col-form-label col-form-label-lg fw-bold fs-6 mb-2">@SharedLocalizer["Products"]</label>
+                        <div class="col-sm-10">
+                            <select id="mySelectProduct" asp-for="ProductIds" asp-items="@ViewBag.Products" data-placeholder="@SharedLocalizer["Choose"]" class="form-control form-control-lg form-control-solid" data-control="select2" data-allow-clear="true" multiple="multiple">
+                                <option></option>
+                            </select>
+                            <span asp-validation-for="ProductIds" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a id="backListButton" class="btn btn-light align-self-center ms-2" asp-controller="Subject" asp-action="Index">@SharedLocalizer["Back_List"]</a>
+                    <button class="btn btn-primary" type="submit">@SharedLocalizer["Save"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputs = document.querySelectorAll('#kt_modal_update_subject_form input[type="text"]');
+        const productSelect = document.querySelector('#mySelectProduct');
+
+        // Yıldız ekleme fonksiyonu
+        function addRequiredStar(element) {
+            const parentDiv = element.closest('.row');
+            if (parentDiv) {
+                const label = parentDiv.querySelector('label');
+                if (label) {
+                    // Önce varolan yıldızları temizleyelim
+                    removeRequiredStar(element);
+
+                    // Yeni yıldız ekleyelim
+                    const star = document.createElement('span');
+                    star.className = 'required-star text-danger ms-1';
+                    star.textContent = '*';
+                    label.appendChild(star);
+                }
+            }
+        }
+
+        // Yıldız kaldırma fonksiyonu
+        function removeRequiredStar(element) {
+            const parentDiv = element.closest('.row');
+            if (parentDiv) {
+                const label = parentDiv.querySelector('label');
+                if (label) {
+                    // Sadece yıldız elementini bul ve kaldır
+                    const stars = label.querySelectorAll('.required-star');
+                    stars.forEach(star => star.remove());
+                }
+            }
+        }
+
+        // Input değişikliklerini dinle
+        inputs.forEach(input => {
+            input.addEventListener('input', function () {
+                if (!this.value || this.value.trim() === '') {
+                    addRequiredStar(this);
+                } else {
+                    removeRequiredStar(this);
+                }
+            });
+        });
+
+        // Products için özel ayarlar
+        if (productSelect) {
+            $(productSelect).on('change', function () {
+                const selectedValues = $(this).val();
+                if (!selectedValues || selectedValues.length === 0) {
+                    addRequiredStar(this);
+                } else {
+                    removeRequiredStar(this);
+                }
+            });
+        }
+
+        // Form submit kontrolü
+        document.querySelector('#kt_modal_update_subject_form').addEventListener('submit', function (e) {
+            let hasEmptyFields = false;
+
+            // Text inputları kontrolü
+            inputs.forEach(input => {
+                if (!input.value || input.value.trim() === '') {
+                    addRequiredStar(input);
+                    hasEmptyFields = true;
+                }
+            });
+
+            // Products kontrolü
+            if (productSelect) {
+                const selectedProducts = $(productSelect).val();
+                if (!selectedProducts || selectedProducts.length === 0) {
+                    addRequiredStar(productSelect);
+                    hasEmptyFields = true;
+                }
+            }
+
+            if (hasEmptyFields) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Uyarı!',
+                    text: 'Lütfen zorunlu alanları doldurunuz.',
+                    icon: 'warning',
+                    confirmButtonText: 'Tamam'
+                });
+            }
+        });
+    });
+</script>

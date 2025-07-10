@@ -1,0 +1,352 @@
+﻿@* @model IEnumerable<AdminTrainerListVM> *@
+    @using BAExamApp.MVC
+@using Microsoft.Extensions.Localization
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc.Common
+@using X.PagedList.Mvc.Core.Common
+@using X.PagedList
+@inject IStringLocalizer<SharedModelResource> localizer
+
+@model IPagedList<AdminTrainerListVM>
+
+
+@{
+    ViewData["Title"] = ViewLocalizer["User"];
+    var currentPageSize = ViewBag.PageSize ?? 10;
+}
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+
+<style>
+    .menu-item {
+        text-align: left;
+        padding-left: 10px;
+    }
+
+    .tooltip-inner {
+        max-width: 350px !important;
+    }
+
+    #veriTablosu {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+        #veriTablosu th, #veriTablosu td {
+            width: 20%;
+            padding: 10px;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+</style>
+
+<section class="section dashboard">
+    <div class="card py-4">
+        <div class="card-body fs-6 py-15 px-10 py-lg-15 px-lg-15 text-gray-700">
+            <div class="d-flex justify-content-between">
+                <h5 style="display: flex; align-items: center;">
+                    @SharedLocalizer["List", SharedLocalizer["Trainer"]]
+                    <span class="material-symbols-outlined" style="margin-left: 5px; font-size: 130%;" data-bs-toggle="tooltip" data-bs-placement="right" title="@SharedLocalizer["Trainer_Filter_Warning"]">info</span>
+                </h5>
+            </div>
+
+            <!-- Arama Kutusu -->
+            <div class="d-flex align-items-center position-relative my-1">
+                <form asp-controller="User" asp-action="Index" method="get" class="d-flex align-items-center">
+                    <div class="form-group">
+                        <input type="text" name="trainerName" id="searchInput" data-kt-user-table-filter="search" class="form-control form-control-solid w-250px ps-14" placeholder="@SharedLocalizer["Search_Trainer"]" />
+                    </div>
+                    <button type="submit" id="searchButton" class="btn btn-primary btn-lg hover-elevate-up ms-3" data-kt-user-table-filter="form">
+                        @SharedLocalizer["Show"]
+                    </button>
+                </form>
+            </div>
+
+            <div class="card-body py-4">
+                <table class="table align-middle table-row-dashed fs-6 gy-5" id="veriTablosu">
+                    <thead>
+                        <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
+                            <th>@SharedLocalizer["Name"]</th>
+                            <th>@SharedLocalizer["Last_Name"]</th>
+                            <th>@SharedLocalizer["Email"]</th>
+                            <th>@SharedLocalizer["Transactions"]</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="text-gray-600 fw-bold" id="trainerTableBody">
+                        @if (!Model.Any())
+                        {
+                            <!--  Eğer eğitmen bulunamazsa, mesaj gösterilecek -->
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                    @SharedLocalizer["No_Results_Found"]
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var trainer in Model)
+                            {
+                                <tr>
+                                    <td>@trainer.FirstName</td>
+                                    <td>@trainer.LastName</td>
+                                    <td style="overflow:hidden; white-space: nowrap; text-overflow: ellipsis; max-width:200px;">@trainer.Email</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-primary" asp-area="Admin" asp-action="LoginAsTrainer" asp-controller="User" asp-route-trainerId="@trainer.Id">
+                                            @SharedLocalizer["Change_Role"]
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+
+                @* <div class="d-flex justify-content-between align-items-center flex-wrap mt-4">
+                    <ul class="pagination" id="pagination"></ul>
+                </div> *@
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap" style="margin-top:10px">
+                    <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
+                        <div class="dataTables_length" id="kt_table_users_length">
+                            <label>
+                                <select id="pageSizeDropdown" name="kt_table_users_length" aria-controls="kt_table_users" class="form-select form-select-sm form-select-solid">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="col-5" style="margin-left:10px">
+                            <span class="text" style="white-space: nowrap;">
+                                @SharedLocalizer["Total"] @Model.TotalItemCount @SharedLocalizer["From"] @(Model.PageNumber * Model.PageSize - (Model.PageSize - 1))
+                                @SharedLocalizer["To"] @(Model.PageNumber * Model.PageSize > Model.TotalItemCount ? Model.TotalItemCount : Model.PageNumber * Model.PageSize)
+                                @SharedLocalizer["Records_Are_Being_Displayed"]
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        @Html.PagedListPager(Model, page => Url.Action("Index", new { page, trainerName = ViewBag.TrainerName, pageSize = ViewBag.PageSize }), new PagedListRenderOptions
+                   {
+                       Display = PagedListDisplayMode.Always,
+                       UlElementClasses = new[] { "pagination", "justify-content-center" },
+                       LiElementClasses = new[] { "page-item" },
+                       PageClasses = new[] { "page-link" },
+                       LinkToFirstPageFormat = @localizer["First"],
+                       LinkToLastPageFormat = @localizer["Last"],
+                       ContainerDivClasses = new[] { "d-flex", "justify-content-center" }
+                   })
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@* <script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let itemsPerPage = 10;
+        const trainers = $('#veriTablosu tbody tr');
+
+        function showPage(page, data) {
+            const trainersToShow = data || trainers;
+            trainersToShow.hide();
+
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            trainersToShow.slice(startIndex, endIndex).show();
+        }
+
+        $('#searchButton').click(function (e) {
+            e.preventDefault();
+
+            const searchQuery = $('#searchInput').val().toLowerCase();
+            const trainers = $('#veriTablosu tbody tr');
+
+            if (searchQuery.trim() === '') {
+                trainers.show();
+                showPage(1, trainers);
+            } else {
+                const filteredTrainers = trainers.filter(function () {
+                    return $(this).text().toLowerCase().indexOf(searchQuery) > -1;
+                });
+
+                trainers.hide();
+                filteredTrainers.show();
+
+                if (filteredTrainers.length === 0) {
+                    //  Eğer sonuç yoksa tabloya "Gösterilecek veri bulunamadı." mesajını ekle
+                    $('#trainerTableBody').html(`
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                        ${"@SharedLocalizer["No_Results_Found"]"}
+                                </td>
+                            </tr>
+                        `);
+                }
+            }
+        });
+
+        showPage(1);
+    });
+</script> *@
+@section Scripts
+{
+    <script src="~/newlayouts/src/js/custom/apps/user-management/users/list/add-trainer.js"></script>
+    <script src="~/newlayouts/src/js/custom/apps/user-management/users/view/update-trainer.js"></script>
+
+
+    @if (ViewBag.ShowCreateModal)
+    {
+        <script>
+            $(function () {
+                $('#kt_modal_add_user').modal('show');
+            });
+        </script>
+    }
+    <script>
+        var localizedTexts = {
+            unsavedChangesTitle: '@SharedLocalizer["Unsaved_Changes_Title"]',
+            unsavedChangesText: '@SharedLocalizer["Unsaved_Changes_Text"]',
+            confirmButtonText: '@SharedLocalizer["Yes_Leave"]',
+            cancelButtonText: '@SharedLocalizer["No_Stay"]',
+            formSubmittedText: '@SharedLocalizer["Form_Submitted_Text"]',
+            okButtonText: '@SharedLocalizer["Ok_Button_Text"]'
+        };
+        var localizer = {
+            emptyTable: '@SharedLocalizer["Empty_Data"]',
+            info: '@SharedLocalizer["Info"]',
+            infoEmpty: '@SharedLocalizer["Info_Empty"]',
+            infoFiltered: '@SharedLocalizer["Info_Filtered"]',
+            zeroRecords: '@SharedLocalizer["Zero_Records"]'
+        };
+
+        // Scroll hareket ettirildiğinde option menüsünü kapatır.
+        $(document).ready(function () {
+            $(window).on('scroll', function () {
+                $('.dropdown-menu.show').removeClass('show');
+                $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                console.log("Scroll hareketi çalıştı.")
+            });
+
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var currentPageSize = @currentPageSize;
+            document.getElementById('pageSize').value = currentPageSize;
+        });
+
+        function changePageSize() {
+            var pageSize = document.getElementById('pageSize').value;
+            var url = new URL(window.location.href);
+
+            var nameOfTrainer = url.searchParams.get('trainerName') || '';
+
+            url.searchParams.set('pageSize', pageSize);
+            url.searchParams.set('page', 1);
+
+            if (nameOfTrainer) {
+                url.searchParams.set('trainerName', nameOfTrainer);
+            }
+
+            window.location.href = url.toString();
+        }
+
+        $(document).ready(function () {
+            $('#pageSizeDropdown').change(function () {
+                var selectedPageSize = $(this).val();
+                var url = new URL(window.location.href);
+
+
+                var nameOfTrainer = url.searchParams.get('trainerName') || '';
+
+
+                url.searchParams.set('pageSize', selectedPageSize);
+                url.searchParams.set('page', 1);
+
+                if (nameOfTrainer) {
+                    url.searchParams.set('trainerName', nameOfTrainer);
+                }
+                window.location.href = url.toString();
+            });
+        });
+
+
+        //jquery for datatables
+        $(document).ready(function () {
+            var table = $('#kt_table_users').DataTable({
+                language: {
+                    emptyTable: localizer.emptyTable,
+                    info: localizer.info,
+                    infoEmpty: localizer.infoEmpty,
+                    infoFiltered: localizer.infoFiltered,
+                    zeroRecords: localizer.zeroRecords
+                },
+                /*  searching: true, */   // sadece search kısmı calıssın
+                paging: false,
+                ordering: false,
+                info: false,
+                order: [[0, 'asc']],
+                pageLength: 10, // Set default page length to 25
+                lengthMenu: [10, 25, 50, 100], // Include 25 in length menu options
+                aoColumnDefs: [
+                    {
+                        targets: 0,
+                        orderable: false
+                    },
+                    {
+                        targets: 5,
+                        orderable: false
+                    }
+                ]
+            });
+        });
+
+
+
+        $(document).ready(function () {
+
+            var currentPageSize = '@ViewBag.PageSize' || '10';
+            var showAllData = '@ViewBag.ShowAllData' === 'True';
+            var trainerName = '@ViewBag.TrainerName';
+            $('#pageSizeDropdown').val(currentPageSize);
+            $('#showInactiveCheckbox').prop('checked', showAllData);
+
+
+            $('#pageSizeDropdown').change(function () {
+                updateUrl();
+            });
+
+            $('#showInactiveCheckbox').change(function () {
+                updateUrl();
+            });
+
+            function updateUrl() {
+                var selectedPageSize = $('#pageSizeDropdown').val();
+                var isChecked = $('#showInactiveCheckbox').is(':checked');
+                var currentPage = '@ViewBag.CurrentPage' || 1;
+                var trainerName = '@ViewBag.TrainerName';
+
+                var url = '@Url.Action("Index", "User")' + `?page=${1}&pageSize=${selectedPageSize}&showAllData=${isChecked}&trainerName=${trainerName}`;
+                window.location.href = url;
+            }
+        });
+
+    </script>
+
+}

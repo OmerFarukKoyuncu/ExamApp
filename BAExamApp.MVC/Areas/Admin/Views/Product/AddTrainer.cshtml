@@ -1,0 +1,94 @@
+﻿@model AdminProductAddTrainerVM
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "AddTrainer";
+}
+
+<section class="section dashboard d-flex justify-content-center align-items-center">
+    <div class="card card-docs flex-row-fluid mb-2" id="kt_docs_content_card">
+        <div class="card-header pt-7" id="kt_chat_contacts_header">
+            <div class="card-title">
+                <h2 class="fw-bolder">@ViewLocalizer["Add_Trainer"]</h2>
+            </div>
+        </div>
+        <div class="card-body fs-6 py-15 px-10 py-lg-15 px-lg-15 text-gray-700">
+            <form class="form fv-plugins-bootstrap5 fv-plugins-framework" asp-action="AddTrainer" method="post">
+                <input type="hidden" asp-for="ProductId" />
+                <div class="fv-row fv-plugins-icon-container">
+                    <label class="fw-bold fs-6 mb-2">@ViewLocalizer["Name_Of_Trainers"]</label>
+                    <select class="form-select form-select-solid" data-control="select2" data-close-on-select="false" data-placeholder="Select an option" data-allow-clear="true" multiple="multiple" asp-for="SelectedTrainersIds">
+                        @foreach (var student in Model.Trainers)
+                        {
+                            @if (Model.AppointedTrainersId != null)
+                            {
+                                <option value="@student.Value" selected="@(Model.AppointedTrainersId.Contains(student.Value) ? "selected" : null)">@student.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@student.Value">@student.Text</option>
+                            }
+                        }
+                    </select>
+                    @if (Context.Request.Method == "POST")
+                    {
+                        <span asp-validation-for="SelectedTrainersIds" class="text-danger">@SharedLocalizer["Trainer_Not_Found"]</span>
+                    }
+                    <div class="d-flex justify-content-end">
+                        <a type="reset" class="btn btn-light me-3" onclick="showUnsavedChangesAlert()">@SharedLocalizer["Back_List"]</a>
+                        <button type="submit" class="btn btn-primary align-self-center ms-2">@SharedLocalizer["Save"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- SweetAlert Popup -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function showUnsavedChangesAlert() {
+        // Sayfa dilini Razor ile JavaScript'e aktar
+        var pageLang = '@Html.Raw(CultureInfo.CurrentCulture.Name)';
+        console.log("Sayfa dili: " + pageLang); // Hata ayıklamak için
+
+        if (pageLang.startsWith("en")) {
+            // İngilizce modal
+            Swal.fire({
+                title: 'You did not save the changes!',
+                text: 'Are you sure you want to leave this page?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085D6',
+                cancelButtonColor: '#DD3333',
+                confirmButtonText: 'Yes, leave',
+                cancelButtonText: 'No, stay',
+                customClass: {
+                    content: 'swal-text-nowrap' // Özel CSS sınıfı
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/Admin/Product';
+                }
+            });
+        } else {
+            // Türkçe modal
+            Swal.fire({
+                title: 'Değişiklikleri kaydetmediniz!',
+                html: '<span style="white-space: nowrap;">Bu sayfadan çıkmak istediğinize emin misiniz?</span>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085D6',
+                cancelButtonColor: '#DD3333',
+                confirmButtonText: 'Evet, çık!',
+                cancelButtonText: 'Hayır, kalmak istiyorum',
+                width: '550px', // Modal genişliğini artır
+                scrollbarPadding: false // Kaydırma çubuğunu kaldır
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/Admin/Product';
+                }
+            });
+        }
+    }
+</script>

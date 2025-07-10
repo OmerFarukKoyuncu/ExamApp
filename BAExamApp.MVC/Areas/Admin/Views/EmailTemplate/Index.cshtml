@@ -1,0 +1,215 @@
+﻿@model IEnumerable<BAExamApp.MVC.Areas.Admin.Models.EmailTemplateVMs.AdminEmailTemplateListVM>;
+@{
+    int count = 0;
+    int pageSize = 3;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalItems = Model.Count();
+    int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+    var paginatedItems = Model.Skip((currentPage - 1) * pageSize).Take(pageSize);
+}
+<link rel="stylesheet" href="~/css/index-emailtemplate.css" />
+<link rel="stylesheet" href="~/css/add-emailtemplate.css" />
+<partial name="~/Areas/Admin/Views/EmailTemplate/CreatePartialView.cshtml" model="new AdminEmailTemplateCreateVM()" />
+<partial name="~/Areas/Admin/Views/EmailTemplate/UpdatePartialView.cshtml" model="new AdminEmailTemplateUpdateVM()" />
+<section class="section dashboard">
+    <div class="card card-docs flex-row-fluid mb-2" id="kt_docs_content_card">
+        <div class="card-body fs-6 py-15 px-10 py-lg-15 px-lg-15 text-gray-700">
+            <div class="d-flex justify-content-between mb-7">
+                <h5 style="display: flex; align-items: center;">@ViewLocalizer["Email_Template_List"]</h5>
+                <div class="action-container">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEmailTemplate">@ViewLocalizer["Create_New"]</button>
+                </div>
+            </div>
+            <div id="kt_datatable_example_1_wrapper" class="dataTables_wrapper dt-bootstrap-4 no-footer">
+                <div class="table-responsive">
+                    <table class="table table-row-dashed fs-6 gy-5">
+                        <thead class="text-start text-gray-400 fw-bolder fs-7 text-uppercase gs-0">
+                            <tr>
+                                <th>@ViewLocalizer["Count"]</th>
+                                <th>@ViewLocalizer["Model_Name"]</th>
+                                <th>@ViewLocalizer["Template_Subject"]</th>
+                                <th class="text-center">@SharedLocalizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 fw-bold">
+                            @foreach (var item in paginatedItems)
+                            {
+                                <tr>
+                                    <td>@(count + 1)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.ModelName)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Subject)</td>
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-active-light-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-extended="false">
+                                                @SharedLocalizer["Options"]
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" aria-labelledby="dropdownMenuButton">
+                                                <li class="menu-item px-3">
+                                                    <a class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#updateEmailTemplate" data-template-id="@item.Id"
+                                                       data-template-subject="@item.Subject"
+                                                       data-template-template="@item.Template"
+                                                       data-template-modelname="@item.ModelName">
+                                                        @ViewLocalizer["Update_New"]
+                                                    </a>
+                                                </li>
+                                                <li class="menu-item px-3">
+                                                    <a href="@Url.Action("Details", new { id = item.Id })" class="menu-link px-3">@SharedLocalizer["Details"]</a>
+                                                </li>
+                                                <li class="menu-item px-3">
+                                                    <a href="@Url.Action("Delete", new { id = item.Id })" class="menu-link px-3">@SharedLocalizer["Delete"]</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                count++;
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="pagination">
+                        @if (totalPages > 1)
+                        {
+                            <div class="pagination-container">
+                                @if (currentPage > 1)
+                                {
+                                    <a href="@Url.Action("Index", new { page = currentPage - 1 })" class="page-link"><i class="fas fa-chevron-left"></i> @SharedLocalizer["Previous"]</a>
+                                }
+
+                                @for (int i = 1; i <= totalPages; i++)
+                                {
+                                    if (i == currentPage)
+                                    {
+                                        <span class="page-link active">@i</span>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("Index", new { page = i })" class="page-link">@i</a>
+                                    }
+                                }
+
+                                @if (currentPage < totalPages)
+                                {
+                                    <a href="@Url.Action("Index", new { page = currentPage + 1 })" class="page-link">@SharedLocalizer["Next"]<i class="fas fa-chevron-right"></i></a>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Sect {
+
+    <script src="~/newLayouts/dist/assets/plugins/custom/tinymce/tinymce.bundle.js"></script>
+    <script src="~/js/index-emailtemplate.js"></script>
+    <script src="~/js/add-emailtemplate.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Add this debug log
+            console.log('Document ready - Setting up card click handlers');
+            tinymce.init({
+                selector: '#template-input',
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'fullscreen', 'code',
+                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                ],
+                toolbar: 'undo redo | styles | bold italic underline strikethrough | ' +
+                    'alignleft aligncenter alignright alignjustify | ' +
+                    'bullist numlist outdent indent | link image | ' +
+                    'forecolor backcolor | formatselect | ' +
+                    'removeformat | help',
+                menubar: 'file edit view insert format tools table help',
+                content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 16px; }',
+                height: 400,
+                z_index: 1200,
+            });
+            tinymce.init({
+                selector: '#template-input-update',
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'fullscreen', 'code',
+                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                ],
+                toolbar: 'undo redo | styles | bold italic underline strikethrough | ' +
+                    'alignleft aligncenter alignright alignjustify | ' +
+                    'bullist numlist outdent indent | link image | ' +
+                    'forecolor backcolor | formatselect | ' +
+                    'removeformat | help',
+                menubar: 'file edit view insert format tools table help',
+                content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 16px; }',
+                height: 400,
+                z_index: 1200,
+                setup: function (editor) {
+                    editor.on('init', function () {
+                        $('#updateEmailTemplate').on('show.bs.modal', function (event) {
+                            let button = $(event.relatedTarget);
+                            let templateId = button.data('template-id');
+                            let templateSubject = button.data('template-subject');
+                            let templateModelName = button.data('template-modelname');
+                            let templateBody = button.data('template-template');
+
+                            let modal = $(this);
+                            modal.find('input[name="Id"]').val(templateId);
+                            modal.find('input[name="Subject"]').val(templateSubject);
+                            modal.find('input[name="ModelName"]').val(templateModelName);
+                            editor.setContent(templateBody);
+                        });
+                    });
+                }
+            });
+            $('.dto-card').on('click', function () {
+                const $card = $(this);
+                const isUpdateShown = $('#updateEmailTemplate').hasClass('show');
+                const isCreateShown = $('#createEmailTemplate').hasClass('show');
+                if (isUpdateShown) {
+                    // console.log(isUpdateShown);
+                    const cardNameUpdate = $card.find('#cardNameUpdate').text().trim().replace(/\s+/g, ' ');
+                    // console.log(cardNameUpdate);
+                    // console.log($('#nameInputUpdate').val());
+                    $('#nameInputUpdate').val(cardNameUpdate);
+                    // console.log($('#nameInputUpdate').val());
+                }
+                if (isCreateShown) {
+                    // console.log(isCreateShown);
+                    const cardName = $card.find('#cardName').text().trim().replace(/\s+/g, ' ');
+                    // // console.log(cardName);
+                    // console.log($('#nameInput').val());
+                    $('#nameInput').val(cardName);
+                    // console.log($('#nameInput').val());
+                }
+                const $cardColumn = $card.closest('.col-md-4');
+                const $container = $card.closest('.row');
+                // Visual feedback
+                $('.dto-card').removeClass('selected');
+                $card.addClass('selected');
+                // Get positions for animation
+                const startPos = $cardColumn.offset();
+                const firstPos = $container.find('.col-md-4:first').offset();
+                // Calculate distance
+                const moveX = firstPos.left - startPos.left;
+                const moveY = firstPos.top - startPos.top;
+
+                // Animate the card
+                $cardColumn
+                    .css({
+                        'transition': 'transform 0.5s ease',
+                        'transform': `translate(${moveX}px, ${moveY}px)`
+                    })
+                    .promise()
+                    .done(function () {
+                        setTimeout(function () {
+                            $cardColumn
+                                .css({
+                                    'transition': 'none',
+                                    'transform': 'none'
+                                })
+                                .prependTo($container); // Now this will only prepend to the specific parent row
+                        }, 500);
+                    });
+            });
+        });
+    </script>
+}

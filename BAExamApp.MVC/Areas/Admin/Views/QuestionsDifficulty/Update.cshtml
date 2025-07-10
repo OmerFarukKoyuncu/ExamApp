@@ -1,0 +1,160 @@
+﻿@model AdminQuestionDifficultyUpdateVM
+
+@{
+    ViewData["Title"] = ViewLocalizer["QuestionDifficulty_Update"];
+}
+
+<!-- Form Start -->
+<form asp-action="Update" id="kt_modal_update_form" class="form" enctype="multipart/form-data" novalidate>
+    <div class="d-flex flex-column scroll-y me-n7 pe-7" id="kt_modal_create_scroll"
+         data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}"
+         data-kt-scroll-max-height="auto" data-kt-scroll-dependencies="#kt_modal_add_user_header"
+         data-kt-scroll-wrappers="#kt_modal_add_user_scroll" data-kt-scroll-offset="300px">
+        <div class="row">
+
+            <!-- Name Field -->
+            <div class="fv-row form-floating mb-7">
+                <input asp-for="Name" class="form-control form-control-solid mb-3 mb-lg-0" placeholder="@SharedLocalizer["Name"]" />
+                <label asp-for="Name" class="fw-bold fs-6 mb-2">
+                    @SharedLocalizer["Name"] <span class="required-star text-danger ms-1">*</span>
+                </label>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <!-- Time Given Field -->
+            <div class="fv-row form-floating mb-7">
+                <input type="time" asp-for="TimeGiven" class="form-control form-control-solid mb-3 mb-lg-0" step="1" placeholder="@SharedLocalizer["TimeGiven"]" />
+                <label asp-for="TimeGiven" class="fw-bold fs-6 mb-2">
+                    @SharedLocalizer["TimeGiven"] <span class="required-star text-danger ms-1">*</span>
+                </label>
+                <span asp-validation-for="TimeGiven" class="text-danger"></span>
+            </div>
+
+            <!-- Score Coefficient Field -->
+            <div class="fv-row form-floating mb-7">
+                <input type="text" inputmode="decimal" pattern="[0-9][.,]?[0-9]" asp-for="ScoreCoefficient" class="form-control form-control-solid mb-3 mb-lg-0" placeholder="@SharedLocalizer["ScoreCoefficient"]" />
+                <label asp-for="ScoreCoefficient" class="fw-bold fs-6 mb-2">
+                    @SharedLocalizer["ScoreCoefficient"] <span class="required-star text-danger ms-1">*</span>
+                </label>
+                <span asp-validation-for="ScoreCoefficient" class="text-danger"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="text-center pt-15">
+        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">@SharedLocalizer["Back_List"]</button>
+        <button type="submit" class="btn btn-primary" data-kt-users-modal-action="submit">
+            <span class="indicator-label">@SharedLocalizer["Save"]</span>
+            <span class="indicator-progress">
+                @SharedLocalizer["Please_Wait"]
+                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+            </span>
+        </button>
+    </div>
+</form>
+
+<script src="~/js/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function () {
+        // Yıldız gösterme/gizleme fonksiyonu
+        function toggleStar(input) {
+            var label = $(input).siblings('label');
+            var star = label.find('.required-star');
+
+            if (!input.value || input.value.trim() === '') {
+                star.removeClass('d-none').show();
+            } else {
+                star.hide();
+            }
+        }
+
+        // Tüm inputları seç
+        var inputs = $('#kt_modal_update_form input[type="text"], #kt_modal_update_form input[type="time"]');
+
+        // Sayfa ilk yüklendiğinde tüm yıldızları gizle (veriler dolu olduğu için)
+        inputs.each(function () {
+            var label = $(this).siblings('label');
+            var star = label.find('.required-star');
+            if (this.value && this.value.trim() !== '') {
+                star.hide();
+            }
+        });
+
+        // Her input için değişiklik olduğunda kontrol et
+        inputs.on('input change', function () {
+            toggleStar(this);
+        });
+
+        // "Back_List" butonuna olay dinleyicisi
+        $('[data-kt-users-modal-action="cancel"]').on('click', function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: localizedTexts.unsavedChangesTitle,
+                text: localizedTexts.unsavedChangesText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: localizedTexts.unsavedconfirmButtonText,
+                cancelButtonText: localizedTexts.unsavedcancelButtonText
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'Admin/QuestionsDifficulty';
+                }
+            });
+        });
+
+        // Modal kapatma butonuna olay dinleyici
+        $("#exampleModal .btn-close").on("click", function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: localizedTexts.unsavedChangesTitle,
+                text: localizedTexts.unsavedChangesText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: localizedTexts.unsavedconfirmButtonText,
+                cancelButtonText: localizedTexts.unsavedcancelButtonText
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = $("#exampleModal form");
+                    if (form.length > 0) {
+                        form[0].reset();
+                    }
+                    if (typeof myModal !== "undefined") {
+                        myModal.hide();
+                    }
+                }
+            });
+        });
+
+        // Form submit kontrolü
+        $('#kt_modal_update_form').on('submit', function (e) {
+            var hasEmptyFields = false;
+
+            inputs.each(function () {
+                if (!this.value || this.value.trim() === '') {
+                    toggleStar(this);
+                    hasEmptyFields = true;
+                }
+            });
+
+            if (hasEmptyFields) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Uyarı!',
+                    text: 'Lütfen zorunlu alanları doldurunuz.',
+                    icon: 'warning',
+                    confirmButtonText: 'Tamam'
+                });
+            }
+        });
+    });
+</script>

@@ -1,0 +1,505 @@
+﻿@using AutoMapper
+@using BAExamApp.MVC.Extensions
+@using System.Globalization
+@using Microsoft.AspNetCore.Http
+@using System.Security.Claims
+@using BAExamApp.Business.Interfaces.Services;
+@using BAExamApp.MVC.Areas.Student.Models.StudentVMs;
+@inject IServiceProvider ServiceProvider
+@inject IHttpContextAccessor httpContextAccessor
+
+
+@{
+    StudentStudentDetailVM studentDetails = null;
+    var studentService = ServiceProvider.GetService(typeof(IStudentService)) as IStudentService;
+    var mapper = ServiceProvider.GetService(typeof(IMapper)) as IMapper;
+    if (studentService != null && mapper != null)
+    {
+
+        var userIdentityId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrEmpty(userIdentityId))
+        {
+            var getStudent = await studentService.GetByIdentityIdAsync(userIdentityId);
+            if (getStudent.IsSuccess)
+            {
+                studentDetails = mapper.Map<StudentStudentDetailVM>(getStudent.Data);
+            }
+        }
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="../../" />
+    <title>BAExamApp - Student</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="~/media/logos/BALogoAkademi.ico" />
+
+    <!-- Metronic / Admin benzeri CSS -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+    <link href="~/newLayouts/dist/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/newLayouts/dist/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/newLayouts/dist/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+
+
+    <!-- Proje özel CSS (animation, adminDashboard vb.) -->
+    <link rel="stylesheet" href="~/css/animation.css" />
+    @* <link rel="stylesheet" href="~/css/start-exam.css" /> *@
+    <link rel="stylesheet" href="~/css/AdminDashboard/adminDashboard.css" />
+    <!-- ... Diğer CSS'ler ... -->
+    @RenderSection("Styles", required: false)
+</head>
+<body id="kt_body"
+class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed aside-enabled aside-fixed"
+style="--kt-toolbar-height:5px; --kt-toolbar-height-tablet-and-mobile:5px">
+
+    <!-- LOADER (isteğe bağlı) -->
+
+    <div class="d-flex flex-column flex-root">
+        <!--begin::Page-->
+        <div class="page d-flex flex-row flex-column-fluid">
+            <partial name="~/Areas/Admin/Views/Animation/_LoaderAnimationPartialView.cshtml" />
+            <partial name="~/Areas/Admin/Views/Animation/_StartExamLoaderAnimationPartialView.cshtml" />
+
+            <!-- SOL MENÜ -->
+            <div id="kt_aside" class="aside aside-light aside-hoverable" data-kt-drawer="true" data-kt-drawer-name="aside" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'200px', '300px': '250px'}" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_aside_mobile_toggle">
+
+                <!--begin::Brand (logo + toggler)-->
+                <div class="aside-logo flex-column-auto" id="kt_aside_logo">
+                    <a asp-controller="Home" asp-action="Index">
+                        <img alt="Logo" src="~/images/BilgeAdam_Teknoloji_YatayLogo.png"
+                        class="h-md-65px logo" />
+                    </a>
+                    <div id="kt_aside_toggle" class="btn btn-icon w-auto px-0 btn-active-color-primary aside-toggle" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="aside-minimize">
+                        <span class="svg-icon svg-icon-1 rotate-180">
+                            <!-- arrow icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path opacity="0.5" d="M14.2657 11.4343L18.45 7.25C18.8642 6.83579 18.8642 6.16421 18.45 5.75C18.0358 5.33579 17.3642 5.33579 16.95 5.75L11.4071 11.2929C11.0166 11.6834 11.0166 12.3166 11.4071 12.7071L16.95 18.25C17.3642 18.6642 18.0358 18.6642 18.45 18.25C18.8642 17.8358 18.8642 17.1642 18.45 16.75L14.2657 12.5657C13.9533 12.2533 13.9533 11.7467 14.2657 11.4343Z" fill="currentColor" />
+                                <path d="M8.2657 11.4343L12.45 7.25C12.8642 6.83579 12.8642 6.16421 12.45 5.75C12.0358 5.33579 11.3642 5.33579 10.95 5.75L5.40712 11.2929C5.01659 11.6834 5.01659 12.3166 5.40712 12.7071L10.95 18.25C11.3642 18.6642 12.0358 18.6642 12.45 18.25C12.8642 17.8358 12.8642 17.1642 12.45 16.75L8.2657 12.5657C7.95328 12.2533 7.95328 11.7467 8.2657 11.4343Z" fill="currentColor" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <!--end::Brand-->
+                <!--begin::Aside menu-->
+                <div class="aside-menu flex-column-fluid">
+                    <div class="hover-scroll-overlay-y my-5 my-lg-5" id="kt_aside_menu_wrapper" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_aside_logo, #kt_aside_footer" data-kt-scroll-wrappers="#kt_aside_menu" data-kt-scroll-offset="0">
+
+                        <div class="menu menu-column menu-title-gray-800 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500" id="#kt_aside_menu" data-kt-menu="true" data-kt-menu-expand="false">
+
+                            <!-- TEK MENÜ: ÖĞRENCİ -->
+                            <div data-kt-menu-trigger="click"
+                            class="menu-item menu-accordion">
+                                <span class="menu-link">
+                                    <span class="menu-icon">
+                                        <span class="svg-icon svg-icon-2">
+
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path opacity="1.0" d="M8.21144 2.04691C8.07742 1.98436 7.92258 1.98436 7.78856 2.04691L0.288558 5.54691C0.107914 5.63121 -0.00539504 5.81476 0.000197994 6.01403C0.005791 6.2133 0.129217 6.3902 0.314306 6.46424L7.81431 9.46424C7.93351 9.51192 8.06649 9.51192 8.1857 9.46424L14 7.13852V13C13.4477 13 13 13.4477 13 14V16H16V14C16 13.4477 15.5523 13 15 13V6.73852L15.6857 6.46424C15.8708 6.3902 15.9942 6.2133 15.9998 6.01403C16.0054 5.81476 15.8921 5.63121 15.7114 5.54691L8.21144 2.04691ZM8 8.46148L1.75802 5.96469L8 3.05176L14.242 5.96469L8 8.46148Z" fill="currentColor" />
+                                                <path opacity="1.0" d="M4.17556 9.03184C4.04549 8.98306 3.90098 8.99059 3.77669 9.05264C3.6524 9.11468 3.55952 9.22564 3.52032 9.35892L3.02032 11.0589C2.94756 11.3063 3.07488 11.5685 3.31431 11.6642L7.81431 13.4642C7.93351 13.5119 8.06649 13.5119 8.1857 13.4642L12.6857 11.6642C12.9251 11.5685 13.0524 11.3063 12.9797 11.0589L12.4797 9.35892C12.4405 9.22564 12.3476 9.11468 12.2233 9.05264C12.099 8.99059 11.9545 8.98306 11.8244 9.03184L8 10.466L4.17556 9.03184ZM4.10803 10.9047L4.32795 10.157L7.82444 11.4682C7.93763 11.5106 8.06237 11.5106 8.17556 11.4682L11.6721 10.157L11.892 10.9047L8 12.4615L4.10803 10.9047Z" fill="currentColor" />
+                                            </svg>
+
+                                        </span>
+                                    </span>
+                                    <span class="menu-title">@SharedLocalizer["Student"]</span>
+                                    <span class="menu-arrow"></span>
+                                </span>
+
+                                <div class="menu-sub menu-sub-accordion">
+                                    <div class="menu-item">
+                                        <a class="menu-link" href="#profile" data-bs-toggle="modal" data-bs-target="#profile-modal">
+                                            <span class="menu-icon">
+                                                <span class="svg-icon svg-icon-2">
+                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path opacity="1.0" d="M4 16C4 16 3 16 3 15C3 14 4 11 8 11C12 11 13 14 13 15C13 16 12 16 12 16H4Z" fill="currentColor"/>
+                                                        <path opacity="1.0" d="M8 10.05C9.38071 10.05 10.5 8.93072 10.5 7.55001C10.5 6.1693 9.38071 5.05001 8 5.05001C6.61929 5.05001 5.5 6.1693 5.5 7.55001C5.5 8.93072 6.61929 10.05 8 10.05Z" fill="currentColor"/>
+                                                        <path opacity="1.0" d="M2 1C0.895431 1 0 1.89543 0 3V12.5C0 13.3284 0.671573 14 1.5 14H2.15288C2.32816 13.3735 2.66508 12.6544 3.21878 12H1V3C1 2.44772 1.44772 2 2 2H14C14.5523 2 15 2.44772 15 3V12H12.7812C13.3349 12.6544 13.6718 13.3735 13.8471 14H14.5C15.3284 14 16 13.3284 16 12.5V3C16 1.89543 15.1046 1 14 1H2Z" fill="currentColor"/>
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">
+                                                @SharedLocalizer["Details", SharedLocalizer["Student"]]
+                                            </span>
+                                        </a>
+                                    </div>
+
+                                    <div class="menu-item">
+                                        <a class="menu-link"
+                                        asp-controller="Student" asp-action="ClassroomList">
+                                            <span class="menu-icon">
+                                                <span class="svg-icon svg-icon-2">
+                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                        <path opacity="1.0" d="M8.35355 1.14645C8.15829 0.951184 7.84171 0.951184 7.64645 1.14645L1.64645 7.14645C1.55268 7.24021 1.5 7.36739 1.5 7.5V14.5C1.5 14.7761 1.72386 15 2 15H6.5C6.77614 15 7 14.7761 7 14.5V10.5H9V14.5C9 14.7761 9.22386 15 9.5 15H14C14.2761 15 14.5 14.7761 14.5 14.5V7.5C14.5 7.36739 14.4473 7.24021 14.3536 7.14645L13 5.79289V2.5C13 2.22386 12.7761 2 12.5 2H11.5C11.2239 2 11 2.22386 11 2.5V3.79289L8.35355 1.14645ZM2.5 14V7.70711L8 2.20711L13.5 7.70711V14H10V10C10 9.72386 9.77614 9.5 9.5 9.5H6.5C6.22386 9.5 6 9.72386 6 10V14H2.5Z" fill="currentColor"/>
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">
+                                                @SharedLocalizer["Classroom_List"]
+                                            </span>
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!--end Student-->
+                            <div>
+                                <hr />
+                            </div>
+                            <!-- TEK MENÜ: SINAV -->
+                            <div data-kt-menu-trigger="click"
+                            class="menu-item menu-accordion">
+                                <span class="menu-link">
+                                    <span class="menu-icon">
+                                        <span class="svg-icon svg-icon-2">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path opacity="1.0" d="M15.8071 0.531064C15.6335 0.353712 15.3977 0.241987 15.1661 0.16843C14.9255 0.0920422 14.6432 0.0424132 14.3335 0.0179672C13.7133 -0.0309909 12.9402 0.017734 12.0825 0.193372C10.3649 0.545068 8.26419 1.41462 6.3147 3.09969C4.3643 4.78555 3.14678 6.82355 2.55716 8.52328C2.26338 9.37017 2.11706 10.1574 2.12798 10.7913C2.13343 11.1074 2.17833 11.4107 2.28243 11.6707C2.29893 11.7119 2.31728 11.7528 2.33764 11.7931C1.53074 12.9306 0.778609 14.0765 0.0799084 15.1981C-0.0715219 15.4412 -0.00137421 15.7637 0.236588 15.9184C0.474551 16.0731 0.790217 16.0014 0.941649 15.7583C1.61531 14.6769 2.33439 13.5809 3.09979 12.4975C3.38533 12.6394 3.71622 12.693 4.05758 12.6802C4.57119 12.6609 5.15629 12.4923 5.78139 12.1896C7.03046 11.5847 8.52507 10.4025 10.0838 8.54813L11.6022 6.9971C11.698 6.89922 11.7518 6.76646 11.7518 6.62804C11.7517 6.48962 11.6978 6.35689 11.602 6.25907L10.873 5.51531L12.184 5.72351C12.3466 5.74933 12.5113 5.69358 12.6267 5.57375C12.8486 5.34313 13.0713 5.11474 13.2904 4.89014C13.9532 4.21045 14.5824 3.56533 15.0533 2.99837C15.3673 2.62028 15.638 2.24588 15.8066 1.89077C15.9704 1.54576 16.0849 1.11838 15.9188 0.702731C15.8931 0.638491 15.8551 0.58013 15.8071 0.531064ZM3.73291 11.6192C5.38521 9.37357 7.24096 7.21549 9.3086 5.39391L10.5186 6.62842L9.34777 7.82441C9.33853 7.83386 9.32965 7.84366 9.32114 7.85379C7.82023 9.64254 6.42993 10.7208 5.34382 11.2468C4.79961 11.5103 4.35318 11.6249 4.02009 11.6374C3.9067 11.6417 3.81191 11.6342 3.73291 11.6192ZM10.5017 4.40039C11.8123 3.37182 13.2023 2.48602 14.6737 1.79953C14.5674 1.95645 14.4342 2.1309 14.2744 2.32333C13.8323 2.85566 13.2461 3.45678 12.5929 4.12664C12.4267 4.29711 12.2561 4.47204 12.0825 4.65144L10.5017 4.40039ZM13.8478 1.04342C9.59354 3.14733 6.04548 6.80016 3.1492 10.6778C3.15642 10.2143 3.27023 9.59161 3.51993 8.87179C4.05231 7.33708 5.16915 5.4567 6.97449 3.89622C8.78075 2.33494 10.7196 1.5366 12.2832 1.21644C12.8732 1.09563 13.4036 1.04418 13.8478 1.04342Z" fill="currentColor" />
+                                                </svg>
+                                            </svg>
+                                        </span>
+                                    </span>
+                                    <span class="menu-title">@SharedLocalizer["Exam"]</span>
+                                    <span class="menu-arrow"></span>
+                                </span>
+                                <div class="menu-sub menu-sub-accordion">
+                                    <!-- Sınav Listesi/Exam List menü öğesi  -->
+                                    <div class="menu-item">
+                                        <a class="menu-link" asp-controller="Exam" asp-action="Index">
+                                            <span class="menu-icon">
+                                                <span class="svg-icon svg-icon-2">
+                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path opacity="1.0" d="M5.5 5C5.22386 5 5 5.22386 5 5.5C5 5.77614 5.22386 6 5.5 6H10.5C10.7761 6 11 5.77614 11 5.5C11 5.22386 10.7761 5 10.5 5H5.5Z" fill="currentColor" />
+                                                        <path opacity="1.0" d="M5.5 7C5.22386 7 5 7.22386 5 7.5C5 7.77614 5.22386 8 5.5 8H8.5C8.77614 8 9 7.77614 9 7.5C9 7.22386 8.77614 7 8.5 7H5.5Z" fill="currentColor" />
+                                                        <path opacity="1.0" d="M8 2C9.10457 2 10 1.10457 10 0H12.5C13.3284 0 14 0.671573 14 1.5V14.5C14 15.3284 13.3284 16 12.5 16H3.5C2.67157 16 2 15.3284 2 14.5V1.5C2 0.671573 2.67157 0 3.5 0H6C6 1.10457 6.89543 2 8 2ZM8 3C6.69378 3 5.58254 2.16519 5.17071 1H3.5C3.22386 1 3 1.22386 3 1.5V14.5C3 14.7761 3.22386 15 3.5 15H12.5C12.7761 15 13 14.7761 13 14.5V1.5C13 1.22386 12.7761 1 12.5 1H10.8293C10.4175 2.16519 9.30622 3 8 3Z" fill="currentColor" />
+                                                    </svg>
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">
+                                                @SharedLocalizer["Exam_List"]
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Aside menu-->
+
+            </div>
+            <!--end::Aside-->
+            <!--begin::Wrapper-->
+            <div class="wrapper d-flex flex-column flex-row-fluid" style="padding-right:0px;"  id="kt_wrapper">
+
+                <!-- HEADER -->
+                <div id="kt_header" class="header align-items-stretch" style="min-width:100%;">
+                    <div class="container-fluid d-flex align-items-stretch justify-content-between">
+
+                        <!-- Mobile toggler -->
+                        <div class="d-flex align-items-center d-lg-none ms-n2 me-2" title="Show aside menu">
+                            <div class="btn btn-icon btn-active-light-primary w-30px h-30px w-md-40px h-md-40px" id="kt_aside_mobile_toggle">
+                                <!--begin::Svg Icon | path: icons/duotune/abstract/abs015.svg-->
+                                <span class="svg-icon svg-icon-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M21 7H3C2.4 7 2 6.6 2 6V4C2 3.4 2.4 3 3 3H21C21.6 3 22 3.4 22 4V6C22 6.6 21.6 7 21 7Z" fill="currentColor" />
+                                        <path opacity="0.3" d="M21 14H3C2.4 14 2 13.6 2 13V11C2 10.4 2.4 10 3 10H21C21.6 10 22 10.4 22 11V13C22 13.6 21.6 14 21 14ZM22 20V18C22 17.4 21.6 17 21 17H3C2.4 17 2 17.4 2 18V20C2 20.6 2.4 21 3 21H21C21.6 21 22 20.6 22 20Z" fill="currentColor" />
+                                    </svg>
+                                </span>
+                                <!--end::Svg Icon-->
+                            </div>
+                        </div>
+
+                        <!-- Mobile Logo -->
+                        <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
+                            <a asp-controller="Student" asp-action="Details" class="d-lg-none">
+                                <img alt="Logo" src="~/images/BilgeAdam_Teknoloji_Mobil_Logo.png"
+                                class="h-30px" />
+                            </a>
+                        </div>
+
+                        <!-- Topbar (User + Language + Logout) -->
+                        <div class="d-flex align-items-stretch justify-content-between flex-lg-grow-1">
+                            <div class="d-flex align-items-stretch" id="kt_header_nav">
+                                <!-- Boş navbar -->
+                            </div>
+
+                            <div class="d-flex align-items-md-end flex-shrink-1">
+                                <!-- User menu -->
+                                <div class="d-flex align-items-center ms-1 ms-lg-3"
+                                id="kt_header_user_menu_toggle"
+                                style="position: fixed; right:10px;">
+                                    <!-- Kullanıcı Adı -->
+                                    <div class="d-flex flex-column">
+                                        @{
+                                            var fullName = Context.Session.GetString("FullName") ?? "StudentUser";
+                                        }
+                                        <div class="fw-bolder d-flex align-items-center fs-5">
+                                            @fullName
+                                        </div>
+                                        <div>
+                                            <span class="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">
+                                                @SharedLocalizer["Student"]
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="separator my-2"></div>
+                                    <div style="height: 20px; width: 20px"></div>
+                                    <div class="cursor-pointer h-md-55px symbol" data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
+
+                                       
+                                        @{
+                                            var userId = httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                                            string userImage = Url.Content("~/images/blank-profile-picture.png");
+
+                                            if (!string.IsNullOrEmpty(userId))
+                                            {
+                                                var studentResult = await studentService.GetByIdentityIdAsync(userId);
+                                                if (studentResult.IsSuccess && studentResult.Data.Image != null)
+                                                {
+                                                    userImage = $"data:image/jpeg;base64,{studentResult.Data.Image}";
+                                                }
+                                            }
+                                        }
+                                        <img id="user-avatar"
+                                             class="symbol rounded-circle"
+                                             src="@userImage" />
+
+
+                                    </div>
+
+                                    <!-- Dropdown -->
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px" data-kt-menu="true">
+                                        <!-- Profil Bilgisi -->
+                                        <div class="menu-item px-5">
+                                            <div class="dropdown-item">
+                                                <div class="cursor-pointer h-md-55px symbol" data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
+                                                    @*<img src="assets/media/avatars/300-1.jpg" alt="user" />*@
+                                                    <img id="user-avatar"
+                                                         class="symbol rounded-circle"
+                                                         alt="user"
+                                                         src="@userImage" />
+
+                                               
+                                                </div>
+                                                <div class="d-flex flex-column">
+                                                    <div class="fw-bolder d-flex align-items-center fs-5">
+                                                        @fullName
+
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">
+                                                            Student
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="separator my-2"></div>
+
+                                        <!-- Dil Seçimi -->
+                                        <div class="menu-item px-5" data-kt-menu-trigger="hover"
+                                        data-kt-menu-placement="left-start">
+                                            <a href="#" class="menu-link px-5">
+                                                <span class="menu-title position-relative">
+                                                    @SharedLocalizer["Language"]
+                                                </span>
+                                            </a>
+                                            <div class="menu-sub menu-sub-dropdown w-175px py-4">
+                                                <div class="menu-item px-3">
+                                                    <a href="/Culture/SetCulture?culture=tr&amp;returnUrl=@Url.ActionContext.HttpContext.Request.Path">
+                                                        <span class="symbol symbol-20px me-4">
+                                                            <img class="rounded-1" src="~/media/avatars/turkey.svg" alt="TR" />
+                                                        </span>
+                                                        @SharedLocalizer["Turkish"]
+                                                    </a>
+                                                </div>
+                                                <div class="separator my-2"></div>
+                                                <div class="menu-item px-3">
+                                                    <a href="/Culture/SetCulture?culture=en&amp;returnUrl=@Url.ActionContext.HttpContext.Request.Path">
+                                                        <span class="symbol symbol-20px me-4">
+                                                            <img class="rounded-1" src="~/media/avatars/united-states.svg" alt="EN" />
+                                                        </span>
+                                                        @SharedLocalizer["English"]
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="separator my-2"></div>
+                                        <!-- My Profile -->
+                                        <div class="menu-item px-5">
+                                            @* <a class="dropdown-item" asp-controller="Student" asp-action="Details"> @SharedLocalizer["My_Profile"] </a> *@
+                                            <a class="dropdown-item" href="#profile" data-bs-toggle="modal" data-bs-target="#profile-modal"> @SharedLocalizer["My_Profile"] </a>
+                                        </div>
+
+                                        <div class="separator my-2"></div>
+
+                                        <!-- Logout -->
+                                        <div class="menu-item px-5">
+                                            <a class="dropdown-item"
+                                            asp-area=""
+                                            asp-controller="Login"
+                                            asp-action="Logout"
+                                            onclick="handleLogout()">
+                                                @SharedLocalizer["SignOut"]
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <!--end::Dropdown-->
+                                </div>
+                                <!--end::User menu-->
+                                <!--begin::Header menu toggle-->
+                                <div class="d-flex align-items-center d-lg-none ms-2 me-n3" title="Show header menu">
+                                    <div class="btn btn-icon btn-active-light-primary w-30px h-30px w-md-40px h-md-40px" id="kt_header_menu_mobile_toggle">
+                                        <!--begin::Svg Icon | path: icons/duotune/text/txt001.svg-->
+                                        <span class="svg-icon svg-icon-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13 11H3C2.4 11 2 10.6 2 10V9C2 8.4 2.4 8 3 8H13C13.6 8 14 8.4 14 9V10C14 10.6 13.6 11 13 11ZM22 5V4C22 3.4 21.6 3 21 3H3C2.4 3 2 3.4 2 4V5C2 5.6 2.4 6 3 6H21C21.6 6 22 5.6 22 5Z" fill="currentColor" />
+                                                <path opacity="0.3" d="M21 16H3C2.4 16 2 15.6 2 15V14C2 13.4 2.4 13 3 13H21C21.6 13 22 13.4 22 14V15C22 15.6 21.6 16 21 16ZM14 20V19C14 18.4 13.6 18 13 18H3C2.4 18 2 18.4 2 19V20C2 20.6 2.4 21 3 21H13C13.6 21 14 20.6 14 20Z" fill="currentColor" />
+                                            </svg>
+                                        </span>
+                                        <!--end::Svg Icon-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Header-->
+                <!--begin::Content-->
+                <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+                    <div class="post d-flex flex-column-fluid" id="kt_post">
+                        <div id="kt_content_container" class="container-fluid">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+                <!--end::Content-->
+
+            </div>
+            <!--end::Wrapper-->
+
+        </div>
+        @if (studentDetails != null)
+        {
+            <!--begin::ProfileModal-->
+            <div class="modal" id="profile-modal" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">@SharedLocalizer["Profile"]</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body pb-18">
+                            <!-- Profil Resmi ve Cinsiyet Alanı -->
+                            <div class="d-flex flex-row justify-content-center align-items-center gap-5 mb-5">
+                                <!-- Profil Resmi Alanı -->
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="image-input image-input-outline me-3" data-kt-image-input="true" style="background-image: url('/media/avatars/blank.png');">
+                                        <div class="image-input-wrapper w-125px h-125px rounded" style="background-image: url('@(studentDetails.Image != null ? $"data:image/jpeg;base64,{studentDetails.Image}" : Url.Content("~/media/avatars/blank.png"))'); background-size: cover; background-position: center;"></div>
+                                        <form id="profile-picture-form" asp-action="ChangeProfilePicture" asp-controller="Student" asp-area="Student" class="form" enctype="multipart/form-data">
+                                            <label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body" data-kt-image-input-action="change" data-bs-toggle="tooltip" title="@SharedLocalizer["Upload_Profile_Picture"]">
+                                                <i class="bi bi-pencil-fill fs-7"></i>
+                                                <input type="file" accept=".png, .jpg, .jpeg" id="profile-picture-input" name="profilePicture" />
+                                            </label>
+                                        </form>
+
+                                        <form asp-action="RemoveProfilePicture"
+                                              asp-controller="Student"
+                                              asp-area="Student"
+                                              method="post"
+                                              id="profile-picture-remove-form">
+                                            <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body" data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="@SharedLocalizer["Remove_Profile_Picture"]" id="profile-picture-remove-button">
+                                                <i class="bi bi-x fs-2"></i>
+                                            </span>
+                                        </form>
+                                    </div>
+                                    <div class="form-text mt-2">@SharedLocalizer["Invalid_File_Type"]</div>
+                                    <h3 class="mt-4">
+                                        @studentDetails.FirstName @studentDetails.LastName
+                                    </h3>
+
+                                </div>
+                            </div>
+
+                            <!-- Profil Detayları -->
+                            <div class="profile-details d-flex justify-content-center">
+                                <div class="profile-info-list text-center">
+                                    <div class="profile-info-row justify-content-center">
+                                        <i class="bi bi-envelope-fill me-1 text-primary"></i>
+                                        <span class="col-lg-2 fw-bold text-muted me-3">
+                                            @SharedLocalizer["Email"] :
+                                        </span>
+                                        <span class="fw-bold text-gray-800 fs-6">@studentDetails.Email</span>
+                                    </div>
+
+                                    <div class="profile-info-row justify-content-center mt-2">
+                                        <span class="profile-label gender">
+                                            @if (studentDetails.Gender == true)
+                                            {
+                                                <i class="bi bi-gender-male me-1 text-primary"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-gender-female me-1 text-danger me-1"></i>
+                                            }
+                                            <span class="col-lg-2 fw-bold text-muted me-3">
+                                                @SharedLocalizer["Gender"] :
+                                            </span>
+                                        </span>
+                                        <span class="fw-bold text-gray-800 fs-6">
+                                            @(studentDetails.Gender == true ? SharedLocalizer["Man"] : SharedLocalizer["Woman"])
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end::ProfileModal-->
+        }
+    <!--end::Page-->
+</div>
+<!--end::Main Wrapper-->
+<!-- Scripts -->
+<script>
+    function handleLogout() {
+        localStorage.removeItem('selectedAccordionMenu');
+        localStorage.removeItem('selectedMenuItem');
+        sessionStorage.removeItem('sessionActive');
+    }
+    window.addEventListener('beforeunload', function () {
+        startLoader();
+    });
+    window.addEventListener("load", function () {
+        stopLoader();
+    });
+</script>
+
+<script src="~/newLayouts/dist/assets/plugins/global/plugins.bundle.js"></script>
+<script src="~/newLayouts/dist/assets/js/scripts.bundle.js"></script>
+<script src="~/newLayouts/dist/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="~/newlayouts/src/js/layout/double-submit-control.js"></script>
+<script src="~/js/animation-start.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        const $profilePictureInput = $("#profile-picture-input");
+
+        $profilePictureInput.on("change", function (e) {
+            $("#profile-picture-form").trigger("submit");
+        });
+
+        $("#profile-picture-remove-button").click(function () {
+            $("#profile-picture-remove-form").trigger("submit");
+        });
+    });
+</script>
+
+@RenderSection("Scripts", required: false)
+@await Component.InvokeAsync("Notyf")
+</body>
+</html>

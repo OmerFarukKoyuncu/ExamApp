@@ -1,0 +1,486 @@
+﻿@* @* @model IEnumerable<AdminAdminListVM> *@
+@model IPagedList<AdminAdminListVM>
+@using BAExamApp.MVC
+@using Microsoft.Extensions.Localization
+@using X.PagedList.Mvc.Common
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@using X.PagedList.Mvc.Core.Common
+@inject IStringLocalizer<SharedModelResource> localizer
+@{
+    var currentPageSize = ViewBag.PageSize ?? 10;
+}
+
+<style>
+    .menu-item {
+        text-align: left;
+        padding-left: 10px;
+    }
+
+    #kt_datatable_example_1 tbody td {
+        padding: 4px !important;
+        vertical-align: middle;
+    }
+
+    .tooltip-inner {
+        max-width: 350px !important;
+    }
+
+    .email-column {
+        padding-left: 20px; /* Adjust this value as needed */
+    }
+</style>
+<div class="card py-4">
+    <!--begin::Card header-->
+
+    <div class="card-body fs-6 py-15 px-10 py-lg-15 px-lg-15 text-gray-700">
+
+        <div class="d-flex justify-content-between">
+            <h5 style="display: flex; align-items: center;">
+                @SharedLocalizer["List", SharedLocalizer["Admin"]]
+            </h5>
+        </div>
+        <div class="card-header border-0 pt-6">
+            <!--begin::Card title-->
+            <div class="card-title">
+                <!--begin::Search-->
+                <div class="d-flex align-items-center position-relative my-1">
+                    <form asp-controller="Admin" asp-action="Index" method="get" class="d-flex align-items-center">
+
+                        <!--end::Svg Icon-->
+                        <!-- İlk Ad alanını içeren form grubu -->
+                        <div class="form-group me-2">
+                            <!-- firstName adında bir giriş alanı, değeri ViewBag.FirstName'den alınıyor -->
+                            <input type="text" name="firstName" id="firstNameInput" value="@ViewBag.FirstName" class="form-control" placeholder=@SharedLocalizer["First_Name"] />
+                        </div>
+                        <!-- Soyad alanını içeren form grubu -->
+                        <div class="form-group me-2">
+                            <!-- lastName adında bir giriş alanı, değeri ViewBag.LastName'den alınıyor -->
+                            <input type="text" name="lastName" id="lastNameInput" value="@ViewBag.LastName" class="form-control" placeholder=@SharedLocalizer["Last_Name"] />
+                        </div>
+                        <!-- E-mail alanını içeren form grubu -->
+                        <div class="form-group me-2">
+                            <!-- email adında bir giriş alanı, değeri ViewBag.Email'den alınıyor -->
+                            <input type="text" name="email" id="emailInput" value="@ViewBag.Email" class="form-control" placeholder=@SharedLocalizer["Email"] />
+                        </div>
+
+                        <button type="submit" id="searchButton" class="btn btn-primary btn-lg hover-elevate-up ms-3" data-kt-user-table-filter="form">
+                            @SharedLocalizer["Show"]
+                        </button>
+                    </form>
+                </div>
+                <!--end::Search-->
+            </div>
+            <!--begin::Card title-->
+            <!--begin::Card toolbar-->
+            <div class="card-toolbar">
+                <!--begin::Toolbar-->
+                <div class="d-flex justify-content-end"
+                     data-kt-user-table-toolbar="base">
+
+                    <!--begin::Add user-->
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_add_user">
+                        <!--begin::Svg Icon | path: icons/duotune/arrows/arr075.svg-->
+                        <!--begin::Svg Icon | path: icons/duotune/arrows/arr075.svg-->
+                        <span class="svg-icon svg-icon-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor" />
+                                <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor" />
+                            </svg>
+                        </span>
+                        @SharedLocalizer["Create", SharedLocalizer["Admin"]]
+                    </button>
+                    <!--end::Add user-->
+                </div>
+                <!--end::Toolbar-->
+            </div>
+            <!--end::Card toolbar-->
+        </div>
+        <!--end::Card header-->
+        <!--begin::Card body-->
+        <div id="kt_datatable_example_1_wrapper" class="dataTables_wrapper dt-bootstrap-4 no-footer">
+            <div class="table-responsive">
+                <div class="card-body py-4">
+
+                    <!-- önceki .... : <table id="kt_datatable_example_1" class="table align-middle table-row-dashed fs-6 gy-5">    -->
+                    <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_datatable_example_1">
+
+                        <!-- Table head -->
+                        <thead>
+                            <tr class="text-start text-muted fw-bolder fs-7 text-uppercase gs-0">
+                                <th>@SharedLocalizer["Profile_Image"]</th>
+                                <th>@SharedLocalizer["First_Name"]</th>
+                                <th>@SharedLocalizer["Last_Name"]</th>
+                                <th>@SharedLocalizer["Email"]</th>
+                                <th class="text-end min-w-100px">@SharedLocalizer["Admin_Operations"]</th>
+                            </tr>
+                        </thead>
+                        <!-- Table body -->
+                        <tbody class="text-gray-600 fw-bold">
+                            @if (Model != null && Model.Count > 0) // Eğer model boş değilse ve içinde en az bir öğe varsa
+                            {
+                                @foreach (var admin in Model)
+                                {
+                                    var firstAndSecondNames = admin.FirstName.Split(new[] { ' ' }, 2);
+                                    var firstName = firstAndSecondNames.Length > 0 ? firstAndSecondNames[0] : admin.FirstName;
+                                    var secondName = firstAndSecondNames.Length > 1 ? firstAndSecondNames[1] : "";
+
+                                    <tr style="height: 60px;">
+                                        <!-- Adjusted row height -->
+                                        @if (admin.NewImage != null && admin.NewImage.Length > 0)
+                                        {
+                                            string imageBase64 = Convert.ToBase64String(admin.NewImage);
+                                            string imageSrc = $"data:image/png;base64,{imageBase64}";
+                                            <td class="d-flex align-items-center" style="padding: 10px 0;">
+                                                <!-- Adjusted padding -->
+                                                <div class="symbol symbol-circle symbol-40px overflow-hidden me-3">
+                                                    <!-- Adjusted image size -->
+                                                    <div class="symbol-label">
+                                                        <img src="@imageSrc" name="Image" alt="Trainer Image" class="w-100" />
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="d-flex align-items-center" style="padding: 10px 0;">
+                                                <!-- Adjusted padding -->
+                                                <div class="symbol symbol-circle symbol-40px overflow-hidden me-3 text-center">
+                                                    <!-- Adjusted image size -->
+                                                    <div class="symbol-label">
+                                                        <img src="~/images/blank-profile-picture.png" alt="Profil Fotoğrafı Bulunamadı!" class="w-100" />
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        }
+                                        <!-- FirstName -->
+                                        <td style="padding: 10px 0;" class="text-capitalize">@firstName @secondName</td>
+                                        <!-- LastName -->
+                                        <td style="padding: 10px 0;">@admin.LastName</td>
+                                        <!-- Email -->
+                                        <td style="padding: 10px 0;">@admin.Email</td>
+                                        <!-- Operations -->
+                                        <td class="text-end" style="padding: 10px 0;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-active-light-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-extended="false">
+                                                    @SharedLocalizer["Options"]
+                                                </button>
+                                                <!-- Menu -->
+                                                <ul class="dropdown-menu dropdown-menu-end menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" aria-labelledby="dropdownMenuButton">
+                                                    <li class="menu-item px-3">
+                                                        <a asp-action="Details" asp-route-id="@admin.Id" class="menu-link px-3">@SharedLocalizer["Details"]</a>
+                                                    </li>
+                                                    <li class="menu-item px-3">
+                                                        <a onclick="loadAdminData('@admin.Id')" id="update-admin-button" class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#kt_modal_update_user">
+                                                            @SharedLocalizer["Update"]
+                                                        </a>
+                                                    </li>
+                                                    <li class="menu-item px-3">
+                                                        <a asp-action="RoleUpdate" asp-route-id="@admin.Id" class="menu-link px-3">@SharedLocalizer["Update_Role_To_Trainer"]</a>
+                                                    </li>
+                                                </ul>
+                                                <!-- End Menu -->
+                                            </div>
+                                        </td>
+                                        <!-- End Operations -->
+                                    </tr>
+                                }
+
+                            }
+                            else // Eğer model null veya boş ise
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center">@SharedLocalizer["No_Results_Found"]</td>
+                                </tr>
+                            }
+
+
+                        </tbody>
+                        <!-- End Table body -->
+                    </table>
+                    <!-- End Table -->
+
+
+                    <div class="row">
+                        <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
+                            <div class="dataTables_length" id="kt_table_users_length">
+                                <label>
+                                    <select id="pageSizeDropdown" name="kt_table_users_length" aria-controls="kt_table_users" class="form-select form-select-sm form-select-solid">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div class="col-5" style="margin-left:10px">
+                                <span class="text" style="white-space: nowrap;">
+                                    @SharedLocalizer["Total"] @Model.TotalItemCount @SharedLocalizer["From"] @(Model.PageNumber * Model.PageSize - (Model.PageSize - 1))
+                                    @SharedLocalizer["To"] @(Model.PageNumber * Model.PageSize > Model.TotalItemCount ? Model.TotalItemCount : Model.PageNumber * Model.PageSize)
+                                    @SharedLocalizer["Records_Are_Being_Displayed"]
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, adminName = ViewBag.NameOfAdmin, pageSize = ViewBag.PageSize }), new PagedListRenderOptions
+                       {
+                           Display = PagedListDisplayMode.Always,
+                           UlElementClasses = new[] { "pagination", "justify-content-center" },
+                           LiElementClasses = new[] { "page-item" },
+                           PageClasses = new[] { "page-link" },
+                           LinkToFirstPageFormat = @localizer["First"],
+                           LinkToLastPageFormat = @localizer["Last"],
+                           ContainerDivClasses = new[] { "d-flex", "justify-content-center" }
+                       })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Card body-->
+    </div>
+    <!--end::Card-->
+
+    <partial name="~/Areas/Admin/Views/Admin/Update.cshtml"
+             model="new AdminAdminUpdateVM()"></partial>
+    <partial name="~/Areas/Admin/Views/Admin/Create.cshtml"
+             model="new AdminAdminCreateVM()"></partial>
+
+    @section Scripts {
+        @*
+  <script src="~/newlayouts/dist/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+  *@
+
+        <script src="~/newlayouts/src/js/custom/apps/user-management/users/list/update-admin.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+
+        @* <script src="~/js/searchboxkeyboardevent.js"></script> *@
+        <script src="~/js/searchboxkeyboardevent.js"></script>
+
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+        <style>
+            /* Autocomplete kutusu */
+            .ui-autocomplete {
+                background-color: #fff;
+                border: 1px solid #dee2e6;
+                border-radius: 0.475rem;
+                max-height: 250px;
+                overflow-y: auto;
+                font-size: 14px;
+                z-index: 1050 !important;
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+                padding: 0.25rem 0;
+            }
+
+            /* Öğe stili */
+            .ui-menu-item-wrapper {
+                padding: 0.5rem 1rem;
+                color: #3f4254;
+                font-weight: 500;
+                transition: background-color 0.2s;
+            }
+
+                /* Hover efekti */
+                .ui-menu-item-wrapper.ui-state-active {
+                    background-color: #009ef7;
+                    color: #fff;
+                    border-radius: 0.325rem;
+                }
+        </style>
+
+
+        <script>
+            $(function () {
+                // FirstName autocomplete
+                $("#firstNameInput").autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: '@Url.Action("SearchAdminFirstNameAutocomplete", "Admin")',
+                            data: { term: request.term },
+                            success: function (data) {
+                                response(data);
+                            }
+                        });
+                    },
+                    minLength: 1
+                });
+
+                 // LastName autocomplete
+                $("#lastNameInput").autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: '@Url.Action("SearchAdminLastNameAutocomplete", "Admin")',
+                            data: { term: request.term },
+                            success: function (data) {
+                                response(data);
+                            }
+                        });
+                    },
+                    minLength: 1
+                });
+
+                 // Email autocomplete
+                $("#emailInput").autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: '@Url.Action("SearchAdminEmailAutocomplete", "Admin")',
+                            data: { term: request.term },
+                            success: function (data) {
+                                response(data);
+                            }
+                        });
+                    },
+                    minLength: 1
+                });
+
+            });
+        </script>
+
+
+
+        <script>
+            var localizedTexts = {
+                unsavedChangesTitle: '@SharedLocalizer["Unsaved_Changes_Title"]',
+                unsavedChangesText: '@SharedLocalizer["Unsaved_Changes_Text"]',
+                confirmButtonText: '@SharedLocalizer["Yes_Leave"]',
+                cancelButtonText: '@SharedLocalizer["No_Stay"]',
+                formSubmittedText: '@SharedLocalizer["Form_Submitted_Text"]',
+                okButtonText: '@SharedLocalizer["Ok_Button_Text"]',
+            };
+            var localizer = {
+                emptyTable: '@SharedLocalizer["Empty_Data"]',
+                info: '@SharedLocalizer["Info"]',
+                infoEmpty: '@SharedLocalizer["Info_Empty"]',
+                infoFiltered: '@SharedLocalizer["Info_Filtered"]',
+                zeroRecords: '@SharedLocalizer["Zero_Records"]',
+            };
+
+
+            //Scroll hareket ettirildiğinde option menüsünü kapatır.
+            $(document).ready(function () {
+                $(window).on('scroll', function () {
+                    $('.dropdown-menu.show').removeClass('show');
+                    $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                    console.log("Scroll hareketi çalıştı.")
+                });
+
+            });
+
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var currentPageSize = @currentPageSize;
+                document.getElementById('pageSize').value = currentPageSize;
+            });
+
+            function changePageSize() {
+                var pageSize = document.getElementById('pageSize').value;
+                var url = new URL(window.location.href);
+
+                var nameOfAdmin = url.searchParams.get('adminName') || '';
+
+                url.searchParams.set('pageSize', pageSize);
+                url.searchParams.set('page', 1);
+
+                if (nameOfAdmin) {
+                    url.searchParams.set('adminName', nameOfAdmin);
+                }
+
+                window.location.href = url.toString();
+            }
+
+            $(document).ready(function () {
+                $('#pageSizeDropdown').change(function () {
+                    var selectedPageSize = $(this).val();
+                    var url = new URL(window.location.href);
+
+
+                    var nameOfAdmin = url.searchParams.get('adminName') || '';
+
+
+                    url.searchParams.set('pageSize', selectedPageSize);
+                    url.searchParams.set('page', 1);
+
+                    if (nameOfAdmin) {
+                        url.searchParams.set('adminName', nameOfAdmin);
+                    }
+                    window.location.href = url.toString();
+                });
+            });
+
+            $(document).ready(function () {
+                var table = $('#kt_table_users').DataTable({
+                    language: {
+                        emptyTable: localizer.emptyTable,
+                        info: localizer.info,
+                        infoEmpty: localizer.infoEmpty,
+                        infoFiltered: localizer.infoFiltered,
+                        zeroRecords: localizer.zeroRecords
+                    },
+                    searching: false,   // Buradaki search kısmını kapattık.
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    order: [[1, 'asc']],
+                    pageLength: 10,
+                    //lengthMenu: [10, 25, 50, 100], // Include 25 in length menu options
+                    aoColumnDefs: [
+                        {
+                            targets: 0,
+                            orderable: false
+                        },
+                        {
+                            targets: 4,
+                            orderable: false
+                        }
+                    ]
+                });
+            });
+
+            $(document).ready(function () {
+
+                var currentPageSize = '@ViewBag.PageSize' || '10';
+
+                $('#pageSizeDropdown').val(currentPageSize);
+
+                $('#pageSizeDropdown').change(function () {
+
+                    var selectedPageSize = $(this).val();
+
+                    var currentPage = '@ViewBag.CurrentPage';
+
+
+                });
+
+            });
+
+            // Search buton kullanmadan arama yapılaması sağlayan kod bloğu
+            // document.getElementById('searchInput').addEventListener('input', function () {
+            //     var searchValue = this.value.toLowerCase();
+            //     var rows = document.querySelectorAll('#kt_table_users tbody tr');
+            //     rows.forEach(function (row) {
+            //         var name = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            //         var information = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            //         if (name.includes(searchValue) || information.includes(searchValue)) {
+            //             row.style.display = '';
+            //         } else {
+            //             row.style.display = 'none';
+            //         }
+            //     });
+            // });
+
+
+
+
+
+
+        </script>
+    }
+    </AdminAdminListVM>

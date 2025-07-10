@@ -1,0 +1,232 @@
+﻿
+ul {
+    list-style: none;
+}
+
+.breadcrumb-holder {
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2)
+    
+}
+
+    .breadcrumb-holder ul {
+        display: flex;
+    }
+
+    .breadcrumb-holder li:last-of-type a {
+        cursor: text;
+    }
+
+    .breadcrumb-holder li a, .breadcrumb-holder li a:link, .breadcrumb-holder li a:visited {
+        text-decoration: none;
+        display: block;
+    }
+
+
+/* Angled breadcrumb design */
+
+.angled-breadcrumbs li a, .angled-breadcrumbs li a:link, .angled-breadcrumbs li a:visited {
+    padding: 5px 5px 5px 20px;
+    color: white;
+    background: #698f87;
+    position: relative;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.angled-breadcrumbs li:first-of-type a {
+    padding: 5px 5px 5px 10px;
+}
+
+.angled-breadcrumbs li a:before, .angled-breadcrumbs li a:after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    transform: translate(0, -50%);
+    right: -12px;
+    border: 16px solid transparent;
+    border-right: none;
+    border-left: 13px solid #698f87;
+}
+
+.angled-breadcrumbs li a:before {
+    right: -13px;
+    border-left: 13px solid white;
+}
+
+.angled-breadcrumbs li a:hover, .angled-breadcrumbs li:last-of-type a {
+    background: #2f8e7a;
+}
+
+    .angled-breadcrumbs li a:hover:after, .angled-breadcrumbs li:last-of-type a:after {
+        border-left: 13px solid #2f8e7a;
+    }
+
+
+/* Rounded breadcrumb styles */
+
+.rounded-breadcrumbs li {
+    margin: 0 8px 0 0;
+}
+
+    .rounded-breadcrumbs li a, .rounded-breadcrumbs li a:link, .rounded-breadcrumbs li a:visited {
+        padding: 5px 15px;
+        color: white;
+        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+        background: #666;
+        border-radius: 6px/15px;
+        position: relative;
+        /*   box-shadow: inset 0 2px 0 0 rgba(255, 255, 255, .3), inset 0 1px 0 0 #363636; */
+    }
+
+        .rounded-breadcrumbs li a:before {
+            position: absolute;
+            content: "";
+            top: 50%;
+            transform: translate(0, -50%);
+        }
+
+        .rounded-breadcrumbs li a:before {
+            content: "";
+            color: #666;
+            width: 10px;
+            height: 10px;
+            background: #38a6b6;
+            border-radius: 50%;
+            right: -7px;
+            border: 2px solid white;
+            text-shadow: none;
+        }
+
+        .rounded-breadcrumbs li a:hover, .rounded-breadcrumbs li:last-of-type a {
+            background: #38a6b6;
+            /*   box-shadow: inset 0 2px 0 0 rgba(255, 255, 255, .4), inset 0 1px 0 0 #218897; */
+        }
+
+            .rounded-breadcrumbs li a:hover:before, .rounded-breadcrumbs li:last-of-type a:before {
+                background: #666;
+            }
+
+
+/* Underlined breadcrumb styles */
+
+.underlined-breadcrumbs li a, .underlined-breadcrumbs li a:link, .underlined-breadcrumbs li a:visited {
+    padding: 7px 10px;
+    color: #666;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid #cecece;
+    position: relative;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+    .underlined-breadcrumbs li a:before {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: #cecece;
+        top: 100%;
+        left: 50%;
+        transform: translate(-50%, -5px)
+    }
+
+    .underlined-breadcrumbs li a:hover, .underlined-breadcrumbs li:last-of-type a {
+        border-bottom: 2px solid #e85a7d;
+        background: #9e2745;
+        color: white;
+    }
+
+        .underlined-breadcrumbs li a:hover:before, .underlined-breadcrumbs li:last-of-type a:before {
+            background: #e85a7d;
+        }
+
+
+/* Basic breadcrumb design */
+
+.basic-breadcrumbs li {
+    margin: 0 8px 0 0;
+}
+
+    .basic-breadcrumbs li a, .basic-breadcrumbs li a:link, .basic-breadcrumbs li a:visited {
+        padding: 5px 8px;
+        color: #5a9ee8;
+        position: relative;
+    }
+
+        .basic-breadcrumbs li a:before {
+            content: "";
+            position: absolute;
+            border: 5px solid transparent;
+            border-right: none;
+            border-left: 5px solid #5a9ee8;
+            top: 50%;
+            right: -5px;
+            transform: translate(0, -50%);
+        }
+
+    .basic-breadcrumbs li:last-of-type a {
+        color: #666;
+    }
+
+        .basic-breadcrumbs li:last-of-type a:before {
+            display: none;
+        }
+
+
+
+/* Counter Breadcrumb styles */
+
+
+.counter-breadcrumbs li {
+    counter-increment: mamun;
+    margin: 0 8px 0 0;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+    .counter-breadcrumbs li a, .counter-breadcrumbs li a:link, .counter-breadcrumbs li a:visited {
+        position: relative;
+        display: block;
+        background: #20b5da;
+        color: white;
+        border-radius: 0 3px 3px 0;
+        padding: 5px 10px 4px 15px;
+        /*   box-shadow: inset 0 2px 0 0 rgba(255, 255, 255, .5), inset 0 1px 0 0 rgba(0, 0, 0, 0.2);  */
+    }
+
+        .counter-breadcrumbs li a:before {
+            content: counter(mamun);
+            display: inline-block;
+            text-align: center;
+            padding: 2px 6px;
+            background: #0090b4;
+            margin: 0 6px 0 -15px;
+            border-radius: 0 3px 3px 0;
+            border-right: 1px solid rgba(0, 0, 0, 0.4);
+        }
+
+        .counter-breadcrumbs li a:after {
+            content: "";
+            position: absolute;
+            border: 7px solid transparent;
+            border-right: none;
+            border-left: 5px solid #20b5da;
+            right: -4px;
+            top: 50%;
+            transform: translate(0, -50%);
+        }
+
+        .counter-breadcrumbs li a:hover, .counter-breadcrumbs li:last-of-type a {
+            background: #0090b4;
+            box-shadow: none;
+        }
+
+            .counter-breadcrumbs li:last-of-type a:before, .counter-breadcrumbs li a:hover:before {
+                background: #20b5da;
+            }
+
+            .counter-breadcrumbs li:last-of-type a:after, .counter-breadcrumbs li a:hover:after {
+                border-left: 5px solid #0090b4;
+            }

@@ -1,0 +1,130 @@
+﻿#index-template-for {
+    padding: 2rem;
+    background-color:white;
+}
+
+.pagination-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.page-link {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    color: #007bff;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+    .page-link i {
+        font-size: 12px; /* Makes the icons slightly smaller than the text */
+    }
+
+    .page-link:hover {
+        background-color: #f8f9fa;
+        color: #0056b3;
+    }
+
+    .page-link.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    /* Optional: Add some animation to the arrows on hover */
+    .page-link:hover i {
+        transform: translateX(-2px); /* Moves left arrow slightly left on hover */
+    }
+
+        .page-link:hover i.fa-chevron-right {
+            transform: translateX(2px); /* Moves right arrow slightly right on hover */
+        }
+
+
+.page-title {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+.action-container {
+    margin-bottom: 20px;
+}
+
+/* Table Styles */
+.email-templates-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    .email-templates-table th,
+    .email-templates-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .email-templates-table th {
+        background-color: #f5f5f5;
+        font-weight: 600;
+    }
+
+    .email-templates-table tr:hover {
+        background-color: #f9f9f9;
+    }
+
+/* Button Styles */
+.btn-create {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+    .btn-create:hover {
+        background-color: #218838;
+    }
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-edit,
+.btn-details,
+.btn-delete {
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    font-size: 14px;
+    transition: opacity 0.3s;
+}
+
+.btn-edit {
+    background-color: #007bff;
+}
+
+.btn-details {
+    background-color: #17a2b8;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+}
+
+    .btn-edit:hover,
+    .btn-details:hover,
+    .btn-delete:hover {
+        opacity: 0.9;
+    }

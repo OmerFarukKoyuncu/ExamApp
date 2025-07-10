@@ -1,0 +1,128 @@
+﻿@model IPagedList<BAExamApp.MVC.Areas.Student.Models.StudentClassroomVMs.StudentStudentListVM>
+
+@{
+    var currentPageSize = Convert.ToInt32(ViewBag.PageSize ?? 10);
+    var pageSizes = new List<int> { 10, 25, 50, 100 };
+}
+
+<div class="card">
+    <div class="ps-9 pt-6">
+        <h5 class="text-dark fw-bolder">
+            @SharedLocalizer["Classroom_List"]
+        </h5>
+        
+        <div class="d-flex flex-stack flex-wrap mb-5 mt-5">
+            <div class="d-flex justify-content-end w-100" data-kt-docs-table-toolbar="base">
+                <form class="formClassroom w-100" asp-area="Student" asp-controller="Student" asp-action="GetFilteredList" method="get">
+                    <div class="classroomfilter">
+                        <div class="row align-items-center gx-3">
+                            <div class="col-md-3 col-sm-12 mb-2 mb-md-0">
+                                <div class="form-floating">
+                                    <select class="form-select form-select-solid" data-control="select2" id="name" name="classroomName" asp-items="@(ViewBag.ClassList)">
+                                        <option value=""> @SharedLocalizer["Choose"]</option>
+                                    </select>
+                                    <label>@SharedLocalizer["Classroom_Name"]</label>
+                                </div>
+                            </div>
+                    
+                            <div class="col-md-1 m-2">
+                                <button type="submit" id="searchButton" class="btn btn-primary hover-elevate-up w-100">@SharedLocalizer["Show"]</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+    <div class="card-header border-0 pt-6">
+        <table class="table table-bordered">
+            <thead>
+                <tr class="text-start text-gray-400 fw-bolder fs-7 text-uppercase gs-0">
+                    <th>@SharedLocalizer["First_Name"]</th>
+                    <th>@SharedLocalizer["Last_Name"]</th>
+                    <th>@SharedLocalizer["Email"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var student in Model)
+                    {
+                        <tr>
+                            <td>@student.FirstName</td>
+                            <td>@student.LastName</td>
+                            <td>@student.Email</td>
+                            
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">@SharedLocalizer["No_Results_Found"]</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="col-sm-12 col-md-6 d-flex align-items-center justify-content-start mb-4">
+            <div class="dataTables_length" id="kt_table_users_lenght">
+                <label>
+                    <select id="pageSizeDropdown" class="form-select form-select-sm form-select-solid">
+                        @foreach (var size in pageSizes)
+                        {
+                            if (size == currentPageSize)
+                            {
+                                <option value="@size" selected="selected">@size</option>
+                            }
+                            else
+                            {
+                                <option value="@size">@size</option>
+                            }
+                        }
+                    </select>
+                </label>
+            </div>
+            <div class="col-5 ms-3">
+                <span style="white-space: normal !important;">
+                    @SharedLocalizer["Total"] @Model.TotalItemCount
+                    @SharedLocalizer["From"] @(Model.PageNumber * Model.PageSize - (Model.PageSize - 1))
+                    @SharedLocalizer["To"] @(Model.PageNumber * Model.PageSize > Model.TotalItemCount ? Model.TotalItemCount : Model.PageNumber * Model.PageSize)
+                    @SharedLocalizer["Records_Are_Being_Displayed"]
+                </span>
+            </div>
+        </div>
+
+            <div class="d-flex justify-content-end mt-3 mb-4">
+            @Html.PagedListPager(Model, page => Url.Action("GetFilteredList", new { page, pageSize = currentPageSize, classroomName = ViewBag.ClassroomName }), new PagedListRenderOptions
+           {
+               Display = PagedListDisplayMode.Always,
+               UlElementClasses = new[] { "pagination", "justify-content-center" },
+               LiElementClasses = new[] { "page-item" },
+               PageClasses = new[] { "page-link" },
+               LinkToFirstPageFormat = @SharedLocalizer["First"].Value,
+               LinkToLastPageFormat = @SharedLocalizer["Last"].Value,
+               ContainerDivClasses = new[] { "d-flex", "justify-content-center" }
+           })
+            </div>
+        </div>
+    </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#pageSizeDropdown').change(function () {
+                var selectedPageSize = $(this).val();
+                var url = new URL(window.location.href);
+                url.searchParams.set('pageSize', selectedPageSize);
+                url.searchParams.set('page', 1);
+                var classroomName = $('#name').val();
+                if (classroomName) {
+                    url.searchParams.set('classroomName', classroomName);
+                }
+                window.location.href = url.toString();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,67 @@
+﻿@model AdminEmailTemplateUpdateVM
+<div class="modal fade" id="updateEmailTemplate" tabindex="-1" aria-labelledby="updateEmailTemplateLabel" aria-hidden="true" data-bs-focus="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateEmailTemplateLabel">@ViewLocalizer["Update_New"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input asp-for="Id" class="form-control" hidden/>
+                    <div class="form-group">
+                        <label asp-for="ModelName" class="control-label">@ViewLocalizer["Template_Name"]</label>
+                        <input asp-for="ModelName" class="form-control" id="nameInputUpdate" />
+                        <span asp-validation-for="ModelName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Subject" class="control-label">@ViewLocalizer["Template_Subject"]</label>
+                        <input asp-for="Subject" class="form-control" />
+                        <span asp-validation-for="Subject" class="text-danger"></span>
+                    </div>
+                    <div class="editor-container">
+                            <div class="form-group">
+                            <label asp-for="Template" class="control-label">@ViewLocalizer["Template"]</label>
+                                <div class="editor-wrapper">
+                                    <textarea asp-for="Template" id="template-input-update" name="Template"></textarea>
+                                </div>
+                                <span asp-validation-for="Template" class="text-danger"></span>
+                            </div>
+                    </div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            @foreach (var dtoType in Model.SendMailDTOModels)
+                            {
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 dto-card">
+                                        <div class="card-feather bg-light">
+                                            <h5 class="card-title mb-0 d-flex justify-content-between align-items-center" id="cardNameUpdate">
+                                                @dtoType.Name
+                                            </h5>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <ul class="list-group list-group-flush">
+                                                @foreach (var property in dtoType.GetProperties())
+                                                {
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <span class="property-name">@property.Name</span>
+                                                        <span class="badge bg-info text-dark property-type-badge">@property.PropertyType.Name.GetCustomTypeName()</span>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@ViewLocalizer["Close"]</button>
+                        <button type="submit" class="btn btn-primary">@ViewLocalizer["Update_New"]</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

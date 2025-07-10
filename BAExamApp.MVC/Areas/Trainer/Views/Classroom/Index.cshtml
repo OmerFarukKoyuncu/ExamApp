@@ -1,0 +1,341 @@
+﻿@model IPagedList<TrainerClassroomListVM>
+
+@using BAExamApp.MVC
+@using Microsoft.Extensions.Localization
+@using X.PagedList.Mvc.Common
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc.Core.Common
+@inject IStringLocalizer<SharedModelResource> localizer
+
+@{
+    ViewData["Title"] = SharedLocalizer["List", SharedLocalizer["Classroom"]];
+    var currentPageSize = ViewBag.PageSize != null ? (int)ViewBag.PageSize : 10;
+    var searchQuery = ViewBag.SearchQuery as string ?? "";
+}
+
+
+<style>
+    .menu-item {
+        text-align: left;
+        padding-left: 10px;
+    }
+
+    .tooltip-inner {
+        max-width: 350px !important;
+    }
+
+    #kt_table_users tbody td {
+        padding: 4px !important;
+        vertical-align: middle;
+    }
+
+    /* DataTables veya responsive tablo altındaki yatay çizgiyi kaldır */
+    .table-responsive::-webkit-scrollbar {
+        height: 0 !important;
+        background: transparent !important;
+    }
+
+    .table-responsive {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE 10+ */
+    }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: transparent !important;
+        }
+
+</style>
+
+
+<head>
+    <link href="~/css/classroom-filter.css" rel="stylesheet" />
+    <link href="~/newlayouts/dist/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/newlayouts/dist/assets/css/style.bundle.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+
+</head>
+
+<section class="section dashboard">
+    <div class="card card-docs flex-row-fluid mb-2" id="kt_docs_content_card">
+        <div class="card-body fs-6 py-15 px-10 py-lg-15 px-lg-15 text-gray-700">
+            <div class="d-flex justify-content-between">
+
+                <h5 style="display: flex; align-items: center;">
+                    @SharedLocalizer["Classroom_List"]
+                </h5>
+            </div>
+
+            <div class="d-flex align-items-center position-relative my-1">
+                <form id="searchForm" method="get" class="d-flex align-items-center">
+                    <span class="svg-icon svg-icon-1 position-absolute ps-3">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="24"
+                             height="24"
+                             viewBox="0 0 24 24"
+                             fill="none">
+                            <rect opacity="0.5"
+                                  x="17.0365"
+                                  y="15.1223"
+                                  width="8.15546"
+                                  height="2"
+                                  rx="1"
+                                  transform="rotate(45 17.0365 15.1223)"
+                                  fill="currentColor" />
+                            <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
+                                  fill="currentColor" />
+                        </svg>
+                    </span>
+                    <div class="form-group">
+                        <input type="text" id="searchInput" class="form-control form-control-solid w-250px ps-14"
+                               placeholder="@SharedLocalizer["Search_Classroom"]" value="@ViewBag.SearchQuery" /> @* Value eklendi *@
+                    </div>
+                    <button type="button" id="searchButton" class="btn btn-primary btn-lg hover-elevate-up ms-3">
+                        @SharedLocalizer["Show"]
+                    </button>
+                </form>
+            </div>
+
+
+            <div id="kt_datatable_example_1_wrapper" class="dataTables_wrapper dt-bootstrap-4 no-footer">
+                <div class="table-responsive">
+                    @* ViewBag.ShowAllData kontrolü kaldırıldı, tablo her zaman gösterilecek *@
+                    <table id="kt_datatable_example_1" class="table table-row-dashed fs-6 gy-5">
+
+                        <thead>
+                            <tr class="text-start text-gray-400 fw-bolder fs-7 text-uppercase gs-0">
+                                <th>@Html.DisplayNameFor(model => model.First().Name)</th>
+                                <th>@Html.DisplayNameFor(model => model.First().OpeningDate)</th>
+                                <th>@Html.DisplayNameFor(model => model.First().ClosedDate)</th>
+                                <th>@SharedLocalizer["Classroom_Operations"]</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 fw-bold ">
+
+                            @foreach (var item in Model)
+
+                            {
+
+                                if (!string.IsNullOrEmpty(item.Name))
+
+                                {
+
+                                    <tr>
+
+                                        <td class="categories text-start">
+
+                                            <a title="Eğitmenler: @item.Name">
+
+                                                <span class="post_category">@item.Name</span>
+
+                                            </a>
+
+                                        </td>
+
+                                        <td class="categories text-start">
+
+                                            <a>
+
+                                                <span class="post_category">@item.OpeningDate.ToShortDateString()</span>
+
+                                            </a>
+
+                                        </td>
+
+                                        <td class="categories text-start">
+
+                                            <a>
+
+                                                <span class="post_category">@item.ClosedDate.ToShortDateString()</span>
+
+                                            </a>
+
+                                        </td>
+                                        <td class="text-start">
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-active-light-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    @SharedLocalizer["Options"]
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                                    <li>
+                                                        <a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id">@SharedLocalizer["Details"]</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    @* Sayfalama Eklendi *@
+                    <div class="row">
+                        <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
+                            <div class="dataTables_length" id="kt_datatable_example_1_length">
+                                <label>
+                                    <select id="pageSizeDropdown" name="kt_datatable_example_1_length" aria-controls="kt_datatable_example_1" class="form-select form-select-sm form-select-solid">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+
+
+                                </label>
+                            </div>
+                            <div class="col-5" style="margin-left:10px">
+                                <span class="text" style="white-space: nowrap;">
+                                    @SharedLocalizer["Total"] @Model.TotalItemCount @SharedLocalizer["From"] @(Model.PageNumber * Model.PageSize - (Model.PageSize - 1))
+                                    @SharedLocalizer["To"] @(Model.PageNumber * Model.PageSize > Model.TotalItemCount ? Model.TotalItemCount : Model.PageNumber * Model.PageSize)
+                                    @SharedLocalizer["Records_Are_Being_Displayed"]
+                                </span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+
+                            @Html.PagedListPager(Model,
+                                     page => Url.Action("Index", new
+                                     {
+                                         page,
+                                         pageSize = currentPageSize,
+                                         searchQuery = ViewBag.SearchQuery // Arama sorgusunu da ekle
+                                     }),
+                                     new PagedListRenderOptions
+                            {
+                                Display = PagedListDisplayMode.Always,
+                                UlElementClasses = new[] { "pagination", "justify-content-center" },
+                                LiElementClasses = new[] { "page-item" },
+                                PageClasses = new[] { "page-link" },
+                                LinkToFirstPageFormat = @localizer["First"],
+                                LinkToLastPageFormat = @localizer["Last"],
+                                ContainerDivClasses = new[] { "d-flex", "justify-content-center" }
+                            })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+@section Scripts
+{
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <style>
+        .ui-autocomplete {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.475rem;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 14px;
+            z-index: 1050 !important;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            padding: 0.25rem 0;
+        }
+
+        .ui-menu-item-wrapper {
+            padding: 0.5rem 1rem;
+            color: #3f4254;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+            .ui-menu-item-wrapper.ui-state-active {
+                background-color: #009ef7;
+                color: #fff;
+                border-radius: 0.325rem;
+            }
+    </style>
+
+    <script>
+        $(function () {
+            $("#searchInput").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: '@Url.Action("GetAllClassrooms", "Classroom")',
+                        success: function (data) {
+                            response(data.filter(x => x.toLowerCase().includes(request.term.toLowerCase())));
+                        }
+                    })
+                },
+                minLength: 1
+            })
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // Scroll event handler
+            $(window).on('scroll', function () {
+                $('.dropdown-menu.show').removeClass('show');
+                $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+            });
+
+            // Search button click handler
+            $("#searchButton").click(function () {
+                var searchQuery = $("#searchInput").val().trim();
+                var pageSize = $('#pageSizeDropdown').val();
+
+                var url = '@Url.Action("Index", "Classroom")';
+                url += `?searchQuery=${encodeURIComponent(searchQuery)}&pageSize=${pageSize}&page=1`;
+
+                window.location.href = url;
+            });
+
+            // Page size dropdown change handler
+            $('#pageSizeDropdown').change(function () {
+                var selectedPageSize = $(this).val();
+                var searchQuery = $("#searchInput").val().trim();
+
+                var url = '@Url.Action("Index", "Classroom")';
+                url += `?pageSize=${selectedPageSize}&searchQuery=${encodeURIComponent(searchQuery)}&page=1`;
+
+                window.location.href = url;
+            });
+
+            // Set initial page size
+            $('#pageSizeDropdown').val('@currentPageSize');
+
+            // Initialize DataTable
+            var dt = $("#kt_datatable_example_1").DataTable({
+                pageLength: @currentPageSize,
+                lengthMenu: [10, 25, 50, 100],
+                paging: false,
+                info: false,
+                searching: false,
+                dom: '<"row"<"col-sm-12"t>>',
+                language: {
+                    emptyTable: '@SharedLocalizer["Empty_Data"]',
+                    info: '@SharedLocalizer["Info"]',
+                    infoEmpty: '@SharedLocalizer["Info_Empty"]',
+                    infoFiltered: '@SharedLocalizer["Info_Filtered"]',
+                    zeroRecords: '@SharedLocalizer["Zero_Records"]',
+                    lengthMenu: '@SharedLocalizer["Length_Menu"]'
+                }
+            });
+
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                title: function () {
+                    return $(this).attr('data-bs-original-title');
+                }
+            });
+        });
+
+        // Remove the alphabetical sorting for select options
+        document.addEventListener("DOMContentLoaded", function () {
+            // Remove the sorting functionality for page size dropdown
+            var pageSizeDropdown = document.getElementById('pageSizeDropdown');
+            if (pageSizeDropdown) {
+                pageSizeDropdown.value = '@currentPageSize';
+            }
+        });
+    </script>
+}

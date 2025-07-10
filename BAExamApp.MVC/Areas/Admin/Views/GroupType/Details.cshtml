@@ -1,0 +1,155 @@
+﻿@model AdminGroupTypeDetailVM
+
+@{
+    ViewData["Title"] = ViewLocalizer["Group_Type_Details"];
+}
+
+<div class="card mb-5 mb-xl-10">
+    <div class="card-header card-header-stretch">
+        <h3 class="card-title">@Model.Name @ViewData["Title"]</h3>
+        <div class="card-toolbar">
+            <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
+                <li class="nav-item me-3">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_7">@ViewData["Title"] </a>
+                </li>
+                <li class="nav-item me-3">
+                    <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8">@SharedLocalizer["Classroom_List"]</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="kt_tab_pane_7" role="tabpanel">
+                <div class="row mb-7">
+                    <label class="col-lg-2 fw-bold text-muted" asp-for="Name"></label>
+                    <div class="col-lg-10 fv-row">
+                        <span class="fw-bold text-gray-800 fs-6">@Model.Name</span>
+                    </div>
+                </div>
+                <div class="row mb-7">
+                    <label class="col-lg-2 fw-bold text-muted" asp-for="Information"></label>
+                    <div class="col-lg-10">
+                        <span class="fw-bold fs-6 text-gray-800">@Model.Information</span>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <a class="btn btn-secondary align-self-center ms-2" asp-controller="GroupType" asp-action="Index">@SharedLocalizer["Back_List"]</a>
+                    <a class="btn btn-primary align-self-center ms-2" data-bs-toggle="modal" data-bs-target="#updateSubjectModal" asp-route-id="@Model.Id" data-item-id="@Model.Id" data-item-name="@Model.Name" data-item-information="@Model.Information" data-kt-users-table-filter="edit_row">@SharedLocalizer["Update"]</a>
+                    <a class="btn btn-danger align-self-center ms-2 deleteAction" data-id="@Model.Id"> @SharedLocalizer["Delete"] </a>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="kt_tab_pane_8" role="tabpanel">
+                <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
+                    <tbody class="text-gray-600 fw-bold">
+                        @foreach (var classroom in Model.Classrooms)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span>@classroom.Name</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-active-light-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria- expanded="false">
+                                            @SharedLocalizer["Options"]
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" aria-labelledby="dropdownMenuButton">
+                                            <li class="menu-item px-3">
+                                                <a asp-controller="Classroom" asp-action="Details" asp-route-id="@classroom.Id" class="menu-link px-3" target="_blank">
+                                                    @SharedLocalizer["Details"]
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-secondary">
+                        <a class="text-black" asp-controller="GroupType" asp-action="Index">@SharedLocalizer["Back_List"]</a>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<partial name="~/Areas/Admin/Views/GroupType/Update.cshtml" model="new AdminGroupTypeUpdateVM()"></partial>
+
+@section Scripts
+{
+    <script src="~/lib/limonte-sweetalert2/sweetalert2.all.js"></script>
+    <script src="~/newlayouts/src/js/custom/apps/user-management/users/list/createGroupType.js"></script>
+
+    <script>
+        var localizedTexts = {
+            confirmTitle: '@SharedLocalizer["Confirm_Delete_Title"]',
+            confirmText: '@SharedLocalizer["Confirm_Delete_Text"]',
+            confirmButtonText2: '@SharedLocalizer["Confirm_Button_Text"]',
+            cancelButtonText2: '@SharedLocalizer["Cancel_Button_Text"]',
+            unsavedChangesTitle: '@SharedLocalizer["Unsaved_Changes_Title"]',
+            unsavedChangesText: '@SharedLocalizer["Unsaved_Changes_Text"]',
+            confirmButtonText: '@SharedLocalizer["Yes_Leave"]',
+            cancelButtonText: '@SharedLocalizer["No_Stay"]',
+            formSubmittedText: '@SharedLocalizer["Form_Submitted_Text"]',
+            okButtonText: '@SharedLocalizer["Ok_Button_Text"]',
+            successTitle: '@SharedLocalizer["Success"]',
+            errorTitle: '@SharedLocalizer["Error"]',
+            serverErrorTitle: '@SharedLocalizer["Server_Error"]',
+            deleteFailedText: '@SharedLocalizer["Delete_Failed_Text"]',
+            errorCodeText: '@SharedLocalizer["Error_Code"]'
+        };
+
+        $(document).ready(function () {
+            $(".deleteAction").click(function () {
+                const id = $(this).attr("data-id");
+
+                if (!id) {
+                    alert("Silme işlemi için geçerli bir ID bulunamadı!");
+                    return;
+                }
+
+                Swal.fire({
+                    title: localizedTexts.confirmTitle,
+                    text: localizedTexts.confirmText,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: localizedTexts.confirmButtonText2,
+                    cancelButtonText: localizedTexts.cancelButtonText2
+                }).then((e) => {
+                    if (e.isConfirmed) {
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action("Delete", "GroupType")",
+                            data: { id: id },
+                            success: function (result) {
+                                if (result.isSuccess) {
+                                    Swal.fire({
+                                        title: localizedTexts.successTitle,
+                                        text: localizedTexts.formSubmittedText,
+                                        icon: "success",
+                                        confirmButtonText: localizedTexts.okButtonText
+                                    });
+                                    setTimeout(() => location.href = "@Url.Action("Index")", 2000);
+                                } else {
+                                    Swal.fire(localizedTexts.errorTitle, localizedTexts.deleteFailedText + ": " + result.message, "error");
+                                }
+                            },
+                            error: function (xhr) {
+                                Swal.fire(localizedTexts.serverErrorTitle, localizedTexts.errorCodeText + xhr.status, "error");
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

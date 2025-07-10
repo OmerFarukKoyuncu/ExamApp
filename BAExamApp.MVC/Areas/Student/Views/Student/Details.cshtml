@@ -1,0 +1,80 @@
+﻿@model StudentStudentDetailVM
+
+@{
+    ViewData["Title"] = ViewLocalizer["Student_Details"];
+}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+@section Styles {
+    @* Orijinal Student-card.css dosyasındaki stil tanımlarını kontrol etmemiz gerekebilir.
+       Eğer image-input sınıfları için tema CSS'leri yeterli değilse veya ikon
+       konumlandırması için ek stiller gerekiyorsa, buraya eklememiz veya
+       mevcut dosyayı güncellememiz gerekebilir. *@
+   @*  <link rel="stylesheet" href="@Url.Content("~/lib/student/css/Student-card.css")" /> *@
+    @* Tema veya Bootstrap ile gelen image-input stillerini içeren CSS dosyasını da
+        buraya eklemeniz gerekebilir, eğer zaten global olarak ekli değilse. *@
+}
+<div class="text-center mb-4">
+  <!-- Profil Resmi Kutusu -->
+  <div class="position-relative d-inline-block" style="width: 125px; height: 125px;">
+    <img src="/images/blank-profile-picture.png"
+         alt="Profil Resmi"
+         class="rounded shadow w-100 h-100 object-fit-cover border border-2" />
+
+    <!-- Düzenle (kalem) ikonu -->
+    <label for="profileUpload" class="position-absolute top-0 end-0 translate-middle p-1 bg-light rounded-circle shadow"
+           style="cursor: pointer;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" class="bi bi-pencil" viewBox="0 0 16 16">
+        <path d="M12.146.146a.5.5 0 0 1 .708 0l2.207 2.207a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2L3 10.207V11h.793L13 3.793 11.207 2z"/>
+      </svg>
+      <input type="file" id="profileUpload" hidden />
+    </label>
+
+    <!-- Kaldır (çarpı) ikonu -->
+    <button type="button"
+            class="position-absolute bottom-0 end-0 translate-middle p-1 bg-light rounded-circle shadow border-0"
+            style="width: 24px; height: 24px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="gray" class="bi bi-x" viewBox="0 0 16 16">
+        <path d="M4.646 4.646a.5.5 0 1 1 .708.708L5.207 6l.647.646a.5.5 0 0 1-.708.708L4.5 6.707l-.646.647a.5.5 0 0 1-.708-.708L3.793 6l-.647-.646a.5.5 0 0 1 .708-.708L4.5 5.293l.646-.647z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Açıklama -->
+  <div class="form-text mt-2">İzin verilen dosya türleri: png, jpg, jpeg.</div>
+</div>
+
+
+
+    <div class="profile-details">
+        <div class="profile-fullname">
+            @char.ToUpper(Model.FirstName[0])@Model.FirstName.Substring(1) @char.ToUpper(Model.LastName[0])@Model.LastName.Substring(1)
+        </div>
+
+        <div class="profile-info-list">
+            <div class="profile-info-row">
+                <span class="profile-label mail">@Html.DisplayNameFor(model => model.Email)</span>
+                <span class="profile-value">@Model.Email</span>
+            </div>
+
+            <div class="profile-info-row">
+                <span class="profile-label gender">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#118cdb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 20c0-3.3137 3.134-6 8-6s8 2.6863 8 6" />
+                    </svg>
+                    @Html.DisplayNameFor(model => model.Gender)
+                </span>
+                <span class="profile-value">@(Model.Gender == true ? SharedLocalizer["Man"] : SharedLocalizer["Woman"])</span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a class="btn back" asp-area="Student" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-arrow-alt-circle-left"></i>
+                <span>@SharedLocalizer["Go Back"]</span>
+            </a>
+        </div>
+    </div>
+</div>

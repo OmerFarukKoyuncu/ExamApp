@@ -1,0 +1,60 @@
+﻿@model AdminTechnicalUnitUpdateVM
+
+@{
+    ViewData["Title"] = ViewLocalizer["Technical_Unit_Update"];
+}
+
+<div class="modal fade" id="updateTechnicalUnitModal" tabindex="-1" aria-labelledby="updateTechnicalUnitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-controller="TechnicalUnit" asp-action="Update" method="post" id="updateTechnicalUnitForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateTechnicalUnitModalLabel">@ViewLocalizer["Technical_Unit_Update"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="fv-row form-floating mb-7">
+                        <input asp-for="Name" type="text" class="form-control form-control-solid mb-3 mb-lg-0" placeholder="@SharedLocalizer["TechnicalUnit_Name"]" required>
+                        <label asp-for="Name" class="required fw-bold fs-6 mb-2 required-change">@SharedLocalizer["TechnicalUnit_Name"]</label>
+                        <input asp-for="Id" type="hidden" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-secondary align-self-center ms-2" asp-controller="TechnicalUnit" asp-action="Index">@SharedLocalizer["Back_List"]</a>
+                    <button type="submit" class="btn btn-primary">@SharedLocalizer["Update"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formElements = document.querySelectorAll(
+            '#updateTechnicalUnitForm input'
+        );
+
+        function checkAndToggleStar(element) {
+            const parentDiv = element.closest('.fv-row');
+            if (!parentDiv) return;
+
+            const label = parentDiv.querySelector('label');
+            if (!label) return;
+
+            if (element.value.trim() === "") {
+                label.classList.add("required");
+            } else {
+                label.classList.remove("required");
+            }
+        }
+
+        // Sayfa yüklendiğinde input'un içi doluysa yıldızı gizler
+        formElements.forEach(element => {
+            checkAndToggleStar(element);
+
+            element.addEventListener('input', function () {
+                checkAndToggleStar(element);
+            });
+        });
+    });
+</script>

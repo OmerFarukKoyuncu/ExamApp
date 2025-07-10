@@ -1,0 +1,172 @@
+﻿@model AdminSubjectCreateVM
+
+@{
+    ViewData["Title"] = @SharedLocalizer["Create_Subject", SharedLocalizer["Product"]];
+}
+
+<div class="modal fade" id="createSubjectModal" tabindex="-1" aria-labelledby="ProductAdd" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@SharedLocalizer["Create_New_Subject"]</h5>
+                <a type="button" class="btn-close" id="backListAction" asp-controller="Subject" asp-action="Index" aria-label="Close"></a>
+            </div>
+            <form asp-controller="Subject" asp-action="Create" class="form" id="create-subject">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <label asp-for="Name" class="col-sm-2 col-form-label required-change col-form-label-lg required"></label>
+                        <div class="col-sm-10">
+                            <input asp-for="Name" type="text" class="form-control form-control-lg form-control-solid" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="col-sm-2 col-form-label col-form-label-lg required fw-bold fs-6 mb-2 required-change">@SharedLocalizer["Products"]</label>
+                        <div class="col-sm-10">
+                            <select id="productSelect" asp-for="ProductIds" asp-items="@ViewBag.Products" data-placeholder="@SharedLocalizer["Choose"]" class="form-control form-control-lg form-control-solid" multiple="multiple">
+                                <option></option>
+                            </select>
+                            <span asp-validation-for="ProductIds" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-light align-self-center ms-2" id="backListAction" asp-controller="Subject" asp-action="Index">@SharedLocalizer["Back_List"]</a>
+                    <button class="btn btn-primary" type="submit">@SharedLocalizer["Save"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script src="~/lib/select2/js/select2.min.js"></script>
+<link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        var formChanged = false;
+
+        // Select2 başlat
+        $('#productSelect').select2({
+            placeholder: '@SharedLocalizer["Choose"]',
+            allowClear: true
+        });
+
+        var localizedTexts = {
+            unsavedChangesTitle: '@SharedLocalizer["Unsaved_Changes_Title"]',
+            unsavedChangesText: '@SharedLocalizer["Unsaved_Changes_Text"]',
+            confirmButtonText: '@SharedLocalizer["Yes_Leave"]',
+            cancelButtonText: '@SharedLocalizer["No_Stay"]',
+        };
+
+        // Form açıldığında bile değişiklik algılansın
+        $('#createSubjectModal').on('show.bs.modal', function () {
+            formChanged = true;
+        });
+
+        // Form içinde değişiklik olup olmadığını takip et
+        $("input, textarea, select").on("change", function () {
+            formChanged = true;
+        });
+
+        // Sayfadan ayrılmaya çalışınca Swal.fire ile uyarı göster
+        $('#createSubjectModal').on("click", "#backListAction, .close", function (e) {
+            if (formChanged) {
+                e.preventDefault(); // Varsayılan işlemi engelle
+
+                Swal.fire({
+                    title: localizedTexts.unsavedChangesTitle,
+                    text: localizedTexts.unsavedChangesText,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: localizedTexts.confirmButtonText,
+                    cancelButtonText: localizedTexts.cancelButtonText
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Modalı kapat
+                        $('#createSubjectModal').modal('hide');
+
+                        // Modal kapandıktan sonra form sıfırla
+                        $('#createSubjectModal').on('hidden.bs.modal', function () {
+                            $(this).find('form').trigger('reset'); // Formu temizle
+                            $('#productSelect').val(null).trigger('change'); // Select2'yi sıfırla
+                            formChanged = false; // Değişiklik algılamayı sıfırla                      
+                        });
+                    }
+                });
+            }
+        });
+
+       
+
+        // Modal kapatıldığında Select2'yi sıfırla
+        $('#createSubjectModal').on('hidden.bs.modal', function () {
+            $('#productSelect').val(null).trigger('change');
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formElements = document.querySelectorAll(
+            '#create-subject input,#create-subject select'
+        );
+
+        console.log("Formelements", formElements)
+
+        function checkAndToggleStar(element) {
+            const parentDiv = element.closest('.row.mb-3');
+            
+            // console.log("Parentdiv",parentDiv);
+            if (!parentDiv) return;
+
+            const label = parentDiv.querySelector('label');
+            if (!label) return;
+            // console.log("Label önce:", label);
+            if (element.value.trim() === "") {
+                label.classList.add("required");
+                // console.log("Label sonra:", label);
+            } else {
+                label.classList.remove("required");
+                // console.log("Label sonra:", label);
+            }
+        }
+
+        formElements.forEach(element => {
+
+            if (element.tagName.toLowerCase() === 'select') {
+                $(element).on('change', function () {
+                    checkAndToggleStar(this);
+                });
+            }
+            else {
+                element.addEventListener('input', function () {
+                    // console.log("Element" , element);
+                    checkAndToggleStar(element);
+                });
+            }
+
+        });
+    });
+</script>
+
+<script>
+    //Form kapandıktan sonra gerekli yerleri sıfırlama
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById('create-subject');
+
+        $('#createSubjectModal').on('hidden.bs.modal', function () {
+
+            form.reset();
+
+            form.querySelectorAll('label.required-change').forEach(label => {
+                label.classList.add('required');
+            });
+        });
+    });
+</script>
